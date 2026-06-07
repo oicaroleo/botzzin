@@ -25,11 +25,22 @@ export class BotManagementService {
     first_name: string;
   }> {
     try {
-      const response = await axios.get(`https://api.telegram.org/bot${token}/getMe`);
+      // Limpar token - remover espaços em branco e quebras de linha
+      const cleanToken = token.trim();
+
+      if (!cleanToken || !cleanToken.includes(':')) {
+        throw new Error('Formato de token inválido. Deve conter ":"');
+      }
+
+      console.log('[TELEGRAM VALIDATION] Token:', cleanToken.substring(0, 20) + '...');
+
+      const response = await axios.get(`https://api.telegram.org/bot${cleanToken}/getMe`, {
+        timeout: 5000,
+      });
 
       const data = response.data as { ok: boolean; result: any };
       if (!data.ok) {
-        throw new Error('Token Telegram inválido');
+        throw new Error(`Token inválido: ${data.description || 'Desconhecido'}`);
       }
 
       const botInfo = data.result;
@@ -40,6 +51,7 @@ export class BotManagementService {
         first_name: botInfo.first_name || 'Bot',
       };
     } catch (error: any) {
+      console.error('[TELEGRAM VALIDATION ERROR]', error.message);
       throw new Error(`Erro ao validar token Telegram: ${error.message}`);
     }
   }
