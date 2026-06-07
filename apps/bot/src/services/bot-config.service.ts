@@ -204,7 +204,7 @@ export class BotConfigService {
     // Validar URL
     try {
       const response = await axios.head(mediaUrl, { timeout: 5000 });
-      if (!response.ok) {
+      if ((response as any).status !== 200) {
         throw new Error('URL inválida');
       }
     } catch (error: any) {
