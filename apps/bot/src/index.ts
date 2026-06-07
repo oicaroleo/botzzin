@@ -1,4 +1,4 @@
-import { startServer } from './server';
+import { startServer } from './server.js';
 
 startServer().catch((err: any) => {
   console.error('Failed to start server:', err);

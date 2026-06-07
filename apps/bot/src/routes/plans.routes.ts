@@ -1,6 +1,6 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
-import { planService, PlanInput } from '../services/plan.service';
-import { requireAuth } from '../middleware/auth';
+import { planService, PlanInput } from '../services/plan.service.js';
+import { requireAuth } from '../middleware/auth.js';
 
 export async function setupPlansRoutes(fastify: FastifyInstance) {
   /**
