@@ -27,5 +27,8 @@ EXPOSE 3000
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
   CMD node -e "require('http').get('http://localhost:3000/health', (r) => {if (r.statusCode !== 200) throw new Error(r.statusCode)})"
 
-# Start with migrations
-CMD ["sh", "-c", "cd apps/bot && npx prisma migrate deploy && cd ../.. && pnpm start"]
+# Create start script
+RUN echo '#!/bin/sh\nset -e\necho "Running migrations..."\ncd apps/bot\nnpx prisma migrate deploy\ncd ../..\necho "Starting server..."\npnpm --filter @botzzin/bot start\n' > /app/start.sh && chmod +x /app/start.sh
+
+# Start
+CMD ["/app/start.sh"]
