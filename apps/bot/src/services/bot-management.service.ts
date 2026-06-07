@@ -38,24 +38,34 @@ export class BotManagementService {
       const url = `https://api.telegram.org/bot${cleanToken}/getMe`;
       console.log('[TELEGRAM VALIDATION] URL:', url.substring(0, 50) + '...');
 
-      const response = await axios.get(url, {
-        timeout: 5000,
+      // Tentar com fetch em vez de axios
+      const fetchResponse = await fetch(url, {
+        method: 'GET',
+        headers: { 'User-Agent': 'BotZZIN/1.0' },
       });
 
-      console.log('[TELEGRAM VALIDATION] Response OK:', response.data.ok);
+      if (!fetchResponse.ok) {
+        throw new Error(`HTTP ${fetchResponse.status}: ${fetchResponse.statusText}`);
+      }
+
+      const data = await fetchResponse.json();
+      console.log('[TELEGRAM VALIDATION] Response OK:', data.ok);
+
+      if (!data.ok) {
+        throw new Error(`Telegram Error: ${data.description || 'Unknown'}`);
+      }
+
+      return {
+        id: String(data.result.id),
+        username: data.result.username || '',
+        first_name: data.result.first_name || 'Bot',
+      };
 
       const data = response.data as { ok: boolean; result: any };
       if (!data.ok) {
         throw new Error(`Token inválido: ${data.description || 'Desconhecido'}`);
       }
 
-      const botInfo = data.result;
-
-      return {
-        id: String(botInfo.id),
-        username: botInfo.username || '',
-        first_name: botInfo.first_name || 'Bot',
-      };
     } catch (error: any) {
       console.error('[TELEGRAM VALIDATION ERROR]', error.message);
       throw new Error(`Erro ao validar token Telegram: ${error.message}`);
