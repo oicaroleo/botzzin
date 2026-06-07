@@ -1,8 +1,0 @@
-[build]
-builder = "dockerfile"
-dockerfile = "Dockerfile"
-context = "."
-
-[deploy]
-startCommand = "/app/entrypoint.sh"
-port = 8080
