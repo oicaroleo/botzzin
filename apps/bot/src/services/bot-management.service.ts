@@ -131,9 +131,6 @@ export class BotManagementService {
         plans: {
           include: { plan: true },
         },
-        _count: {
-          select: { leads: true, payments: true },
-        },
       },
     });
 
