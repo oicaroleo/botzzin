@@ -3,7 +3,7 @@ FROM node:20-alpine
 WORKDIR /app
 
 # Install system dependencies for Prisma and nginx
-RUN apk add --no-cache openssl nginx
+RUN apk add --no-cache openssl nginx curl
 
 # Install pnpm
 RUN npm install -g pnpm
@@ -21,7 +21,7 @@ RUN pnpm install --frozen-lockfile
 # Build both apps
 RUN pnpm build
 
-# Copy nginx config
+# Setup nginx config
 RUN cat > /etc/nginx/nginx.conf << 'EOF'
 user nginx;
 worker_processes auto;
@@ -49,23 +49,58 @@ http {
     types_hash_max_size 2048;
     gzip on;
 
-    # Backend Fastify
-    upstream bot {
+    upstream bot_backend {
         server 127.0.0.1:3001;
     }
 
-    # Frontend Next.js
-    upstream dashboard {
+    upstream dashboard_frontend {
         server 127.0.0.1:3000;
     }
 
     server {
-        listen 80;
+        listen 8080;
         server_name _;
 
-        # Serve Next.js on root
+        # Proxy API calls to Fastify
+        location /api/ {
+            proxy_pass http://bot_backend;
+            proxy_http_version 1.1;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+        }
+
+        # Proxy webhook calls to Fastify
+        location /webhook {
+            proxy_pass http://bot_backend;
+            proxy_http_version 1.1;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+        }
+
+        # Proxy admin calls to Fastify
+        location /admin/ {
+            proxy_pass http://bot_backend;
+            proxy_http_version 1.1;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+        }
+
+        # Health check from Fastify
+        location /health {
+            proxy_pass http://bot_backend;
+            proxy_http_version 1.1;
+            proxy_set_header Host $host;
+        }
+
+        # Everything else goes to Next.js dashboard
         location / {
-            proxy_pass http://dashboard;
+            proxy_pass http://dashboard_frontend;
             proxy_http_version 1.1;
             proxy_set_header Upgrade $http_upgrade;
             proxy_set_header Connection 'upgrade';
@@ -75,67 +110,104 @@ http {
             proxy_set_header X-Forwarded-Proto $scheme;
             proxy_cache_bypass $http_upgrade;
         }
-
-        # API routes go to Fastify
-        location /api/ {
-            proxy_pass http://bot;
-            proxy_http_version 1.1;
-            proxy_set_header Host $host;
-            proxy_set_header X-Real-IP $remote_addr;
-            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-            proxy_set_header X-Forwarded-Proto $scheme;
-        }
-
-        # Webhook routes go to Fastify
-        location /webhook {
-            proxy_pass http://bot;
-            proxy_http_version 1.1;
-            proxy_set_header Host $host;
-            proxy_set_header X-Real-IP $remote_addr;
-            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-            proxy_set_header X-Forwarded-Proto $scheme;
-        }
-
-        # Health check
-        location /health {
-            proxy_pass http://bot;
-            proxy_http_version 1.1;
-            proxy_set_header Host $host;
-        }
     }
 }
 EOF
 
 # Expose port
-EXPOSE 80
+EXPOSE 8080
 
 # Create startup script
 RUN cat > /app/entrypoint.sh << 'SCRIPT'
 #!/bin/sh
 set -e
 
-# Start Fastify backend on port 3001
+echo "=== Starting BotZZIN Multi-Service App ==="
+
+echo ""
+echo "=== Syncing database schema with Prisma ==="
 cd /app/apps/bot
-PORT=3001 node dist/index.js &
+npx prisma db push --skip-generate --accept-data-loss || {
+  echo "WARNING: Database sync failed, continuing anyway..."
+}
+
+echo ""
+echo "=== Starting Fastify backend on port 3001 ==="
+cd /app/apps/bot
+PORT=3001 node dist/index.js > /tmp/bot.log 2>&1 &
 BOT_PID=$!
+echo "Bot started with PID $BOT_PID"
 
-# Start Next.js dashboard on port 3000
+echo ""
+echo "=== Waiting for backend to be ready (max 30 seconds) ==="
+MAX_RETRIES=15
+RETRY=0
+while [ $RETRY -lt $MAX_RETRIES ]; do
+  if curl -f -s http://127.0.0.1:3001/health > /dev/null 2>&1; then
+    echo "✓ Backend is ready!"
+    break
+  fi
+  RETRY=$((RETRY + 1))
+  echo "  Attempt $RETRY/$MAX_RETRIES - Backend not ready yet..."
+  sleep 2
+done
+
+if [ $RETRY -eq $MAX_RETRIES ]; then
+  echo "⚠ Backend took too long to start, but continuing..."
+fi
+
+echo ""
+echo "=== Starting Next.js dashboard on port 3000 ==="
 cd /app/apps/dashboard
-PORT=3000 npm run start &
+PORT=3000 npm run start > /tmp/dashboard.log 2>&1 &
 DASHBOARD_PID=$!
+echo "Dashboard started with PID $DASHBOARD_PID"
 
-# Start nginx on port 80
-nginx -g "daemon off;"
+echo ""
+echo "=== Waiting for dashboard to be ready (max 30 seconds) ==="
+RETRY=0
+while [ $RETRY -lt $MAX_RETRIES ]; do
+  if curl -s http://127.0.0.1:3000 > /dev/null 2>&1; then
+    echo "✓ Dashboard is ready!"
+    break
+  fi
+  RETRY=$((RETRY + 1))
+  echo "  Attempt $RETRY/$MAX_RETRIES - Dashboard not ready yet..."
+  sleep 2
+done
 
-# Wait for processes
-wait $BOT_PID $DASHBOARD_PID
+if [ $RETRY -eq $MAX_RETRIES ]; then
+  echo "⚠ Dashboard took too long to start, but continuing..."
+fi
+
+echo ""
+echo "=== Starting nginx reverse proxy on port 8080 ==="
+mkdir -p /var/log/nginx
+nginx -g "daemon off;" &
+NGINX_PID=$!
+echo "Nginx started with PID $NGINX_PID"
+
+echo ""
+echo "✓ All services started!"
+echo "  Bot: http://127.0.0.1:3001"
+echo "  Dashboard: http://127.0.0.1:3000"
+echo "  Public endpoint: http://127.0.0.1:8080"
+echo ""
+echo "Logs:"
+echo "  tail -f /tmp/bot.log"
+echo "  tail -f /tmp/dashboard.log"
+echo "  tail -f /var/log/nginx/error.log"
+echo ""
+
+# Keep all processes running
+wait
 SCRIPT
 
 RUN chmod +x /app/entrypoint.sh
 
 # Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
-  CMD wget --quiet --tries=1 --spider http://localhost/health || exit 1
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=5 \
+  CMD curl -f http://localhost:8080/health || exit 1
 
 # Start
 CMD ["/app/entrypoint.sh"]
