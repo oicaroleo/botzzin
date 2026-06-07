@@ -120,9 +120,17 @@ EXPOSE 8080
 # Create startup script
 RUN cat > /app/entrypoint.sh << 'SCRIPT'
 #!/bin/sh
-set -e
 
 echo "=== Starting BotZZIN Multi-Service App ==="
+
+# Trap to cleanup all child processes
+cleanup() {
+  echo "Shutting down all services..."
+  kill $(jobs -p) 2>/dev/null || true
+  wait
+  exit 0
+}
+trap cleanup SIGTERM SIGINT
 
 echo ""
 echo "=== Syncing database schema with Prisma ==="
@@ -148,13 +156,9 @@ while [ $RETRY -lt $MAX_RETRIES ]; do
     break
   fi
   RETRY=$((RETRY + 1))
-  echo "  Attempt $RETRY/$MAX_RETRIES - Backend not ready yet..."
+  echo "  Attempt $RETRY/$MAX_RETRIES..."
   sleep 2
 done
-
-if [ $RETRY -eq $MAX_RETRIES ]; then
-  echo "⚠ Backend took too long to start, but continuing..."
-fi
 
 echo ""
 echo "=== Starting Next.js dashboard on port 3000 ==="
@@ -172,12 +176,14 @@ while [ $RETRY -lt $MAX_RETRIES ]; do
     break
   fi
   RETRY=$((RETRY + 1))
-  echo "  Attempt $RETRY/$MAX_RETRIES - Dashboard not ready yet..."
+  echo "  Attempt $RETRY/$MAX_RETRIES..."
   sleep 2
 done
 
-if [ $RETRY -eq $MAX_RETRIES ]; then
-  echo "⚠ Dashboard took too long to start, but continuing..."
+echo ""
+echo "=== Verifying backend is still responding ==="
+if ! curl -f -s http://127.0.0.1:3001/health > /dev/null 2>&1; then
+  echo "⚠ WARNING: Backend stopped responding!"
 fi
 
 echo ""
@@ -189,17 +195,20 @@ echo "Nginx started with PID $NGINX_PID"
 
 echo ""
 echo "✓ All services started!"
-echo "  Bot: http://127.0.0.1:3001"
-echo "  Dashboard: http://127.0.0.1:3000"
-echo "  Public endpoint: http://127.0.0.1:8080"
 echo ""
-echo "Logs:"
+echo "Service endpoints:"
+echo "  Backend API: http://127.0.0.1:3001"
+echo "  Dashboard: http://127.0.0.1:3000"
+echo "  Public (nginx): http://127.0.0.1:8080"
+echo ""
+echo "Live logs:"
 echo "  tail -f /tmp/bot.log"
 echo "  tail -f /tmp/dashboard.log"
 echo "  tail -f /var/log/nginx/error.log"
 echo ""
+echo "=== All systems operational ==="
 
-# Keep all processes running
+# Wait for all background jobs to keep the container alive
 wait
 SCRIPT
 
