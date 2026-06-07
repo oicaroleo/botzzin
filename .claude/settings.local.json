@@ -9,7 +9,8 @@
       "Bash(Format-Table -AutoSize)",
       "Bash(git add *)",
       "Bash(git commit *)",
-      "Bash(git push *)"
+      "Bash(git push *)",
+      "Bash(curl -s -X POST https://botzzin-production.up.railway.app/api/auth/signup -H 'Content-Type: application/json' -d '{\"name\":\"MVP User\",\"email\":\"mvp@botzzin.com\",\"password\":\"MvpTest123!@\"}')"
     ]
   }
 }
