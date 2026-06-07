@@ -2,19 +2,17 @@
 set -e
 
 echo "=== Starting BotZZIN ==="
-echo "Current directory: $(pwd)"
-echo "Files in prisma:"
-ls -la apps/bot/prisma/ || echo "ERROR: prisma directory not found!"
+echo "DATABASE_URL: $DATABASE_URL"
 
 echo ""
-echo "=== Running Prisma migrations ==="
-cd apps/bot
-npx prisma migrate deploy --skip-generate || {
-  echo "ERROR: Migration failed!"
+echo "=== Syncing database schema with Prisma ==="
+cd /app/apps/bot
+npx prisma db push --skip-generate --accept-data-loss || {
+  echo "ERROR: Database sync failed!"
   exit 1
 }
 
 echo ""
 echo "=== Starting server ==="
-cd ../..
+cd /app
 pnpm --filter @botzzin/bot start
