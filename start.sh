@@ -13,6 +13,21 @@ npx prisma db push --skip-generate --accept-data-loss || {
 }
 
 echo ""
-echo "=== Starting server ==="
-cd /app
-pnpm --filter @botzzin/bot start
+echo "=== Starting Fastify backend on port 3001 ==="
+cd /app/apps/bot
+PORT=3001 node dist/index.js &
+BOT_PID=$!
+echo "Fastify started with PID $BOT_PID"
+
+echo ""
+echo "=== Starting Next.js dashboard on port 3000 ==="
+cd /app/apps/dashboard
+PORT=3000 npm run start &
+DASHBOARD_PID=$!
+echo "Next.js started with PID $DASHBOARD_PID"
+
+echo ""
+echo "=== Starting nginx on port 80 ==="
+nginx -g "daemon off;"
+
+wait $BOT_PID $DASHBOARD_PID
