@@ -27,11 +27,12 @@ export class BotManagementService {
     try {
       const response = await axios.get(`https://api.telegram.org/bot${token}/getMe`);
 
-      if (!response.data.ok) {
+      const data = response.data as { ok: boolean; result: any };
+      if (!data.ok) {
         throw new Error('Token Telegram inválido');
       }
 
-      const botInfo = response.data.result;
+      const botInfo = data.result;
 
       return {
         id: String(botInfo.id),

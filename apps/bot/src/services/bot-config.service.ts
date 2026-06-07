@@ -30,11 +30,12 @@ export class BotConfigService {
         }
       );
 
-      if (!response.data.ok) {
+      const data = response.data as { ok: boolean; result: any };
+      if (!data.ok) {
         throw new Error('Canal não encontrado');
       }
 
-      const chat = response.data.result;
+      const chat = data.result;
 
       return {
         id: String(chat.id),

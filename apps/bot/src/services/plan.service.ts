@@ -88,7 +88,7 @@ export class PlanService {
       },
     });
 
-    return botPlans.map((bp) => this.formatPlanResponse(bp.plan, bp.isDefault));
+    return (botPlans as any[]).map((bp: any) => this.formatPlanResponse(bp.plan, bp.isDefault));
   }
 
   /**

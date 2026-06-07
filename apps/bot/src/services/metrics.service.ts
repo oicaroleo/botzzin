@@ -109,9 +109,10 @@ export class MetricsService {
       leadsNovosPeriodo > 0 ? ((pixPagos / leadsNovosPeriodo) * 100).toFixed(2) : '0';
 
     // Agrupar por status
-    const statusMap = Object.fromEntries(
-      leadsPorStatus.map((item: any) => [item.status, item._count])
-    );
+    const statusMap: { [key: string]: number } = {};
+    (leadsPorStatus as any[]).forEach((item: any) => {
+      statusMap[item.status] = item._count;
+    });
 
     return {
       period: {
@@ -123,7 +124,7 @@ export class MetricsService {
         leadsNovosPeriodo,
         pixGerados,
         pixPagos,
-        totalReceita: totalReceita._sum.amount || 0,
+        totalReceita: (totalReceita._sum as any).amount || 0,
         conversionRate: parseFloat(conversionRate as string),
       },
       statusBreakdown: {
