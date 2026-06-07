@@ -32,11 +32,17 @@ export class BotManagementService {
         throw new Error('Formato de token inválido. Deve conter ":"');
       }
 
-      console.log('[TELEGRAM VALIDATION] Token:', cleanToken.substring(0, 20) + '...');
+      console.log('[TELEGRAM VALIDATION] Clean token:', cleanToken.substring(0, 20) + '...');
+      console.log('[TELEGRAM VALIDATION] Clean token length:', cleanToken.length);
 
-      const response = await axios.get(`https://api.telegram.org/bot${cleanToken}/getMe`, {
+      const url = `https://api.telegram.org/bot${cleanToken}/getMe`;
+      console.log('[TELEGRAM VALIDATION] URL:', url.substring(0, 50) + '...');
+
+      const response = await axios.get(url, {
         timeout: 5000,
       });
+
+      console.log('[TELEGRAM VALIDATION] Response OK:', response.data.ok);
 
       const data = response.data as { ok: boolean; result: any };
       if (!data.ok) {
@@ -61,6 +67,10 @@ export class BotManagementService {
    */
   async createBot(userId: string, input: BotCreateInput): Promise<any> {
     // Validar token Telegram
+    console.log('[BOT CREATE] Input token:', input.telegramBotToken?.substring(0, 20) + '...');
+    console.log('[BOT CREATE] Token length:', input.telegramBotToken?.length);
+    console.log('[BOT CREATE] Token type:', typeof input.telegramBotToken);
+
     const botInfo = await this.validateTelegramToken(input.telegramBotToken);
 
     // Verificar se bot já existe
