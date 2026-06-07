@@ -1,0 +1,45 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+dist/
+build/
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build
+dist/
+.next/
+.turbo/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Railway
+.railway/
+
+# Testing
+coverage/
+.nyc_output/
+
+# Misc
+ngrok.exe
+server.log

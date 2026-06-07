@@ -1,0 +1,261 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Usuário (dono do bot)
+model User {
+  id            String   @id @default(cuid())
+  email         String   @unique
+  name          String?
+  passwordHash  String?  // Hash bcrypt da senha
+
+  role          String   @default("user") // user, admin
+  isActive      Boolean  @default(true)
+  lastLoginAt   DateTime?
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  bots          Bot[]
+  payments      Payment[]
+
+  @@index([email])
+  @@index([isActive])
+}
+
+// Bot do usuário
+model Bot {
+  id                String   @id @default(cuid())
+  userId            String
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  telegramBotId     String   @unique
+  telegramBotToken  String   @unique
+  telegramUsername  String?
+
+  status            String   @default("active") // active, paused, deleted
+
+  // Configurações do bot
+  defaultChannelId  String?  // ID do canal/grupo padrão
+  welcomeMessage    String?  // Mensagem de boas-vindas
+  welcomeMediaUrl   String?  // URL da mídia de boas-vindas (foto/vídeo)
+
+  metadata          Json?    // Dados adicionais customizáveis
+
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  leads             Lead[]
+  flows             Flow[]
+  config            BotConfig?
+  plans             BotPlan[]
+
+  @@index([userId])
+  @@index([telegramBotId])
+  @@index([status])
+}
+
+// Configuração do Bot (detalhes)
+model BotConfig {
+  id            String   @id @default(cuid())
+  botId         String   @unique
+  bot           Bot      @relation(fields: [botId], references: [id], onDelete: Cascade)
+
+  channelId     String?  // ID do canal/grupo para liberação de acesso
+  channelName   String?
+
+  isActive      Boolean  @default(true)
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([botId])
+}
+
+// Plano de acesso
+model Plan {
+  id            String   @id @default(cuid())
+
+  name          String   // "7 Dias", "30 Dias", "VIP", etc
+  description   String?  // Descrição do plano
+
+  days          Int      // Dias de acesso
+  price         Float    // Preço em reais
+
+  emoji         String   @default("💎") // Ícone do plano
+
+  isActive      Boolean  @default(true)
+  priority      Int      @default(0) // Ordem de exibição (0 = primeiro)
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  botPlans      BotPlan[]
+
+  @@index([isActive])
+}
+
+// Relação Bot <-> Plan
+model BotPlan {
+  id            String   @id @default(cuid())
+  botId         String
+  bot           Bot      @relation(fields: [botId], references: [id], onDelete: Cascade)
+
+  planId        String
+  plan          Plan     @relation(fields: [planId], references: [id], onDelete: Cascade)
+
+  isDefault     Boolean  @default(false) // Plano padrão
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@unique([botId, planId])
+  @@index([botId])
+  @@index([planId])
+}
+
+// Lead (prospect)
+model Lead {
+  id                String   @id @default(cuid())
+  botId             String
+  bot               Bot      @relation(fields: [botId], references: [id], onDelete: Cascade)
+
+  telegramUserId    String
+  telegramUsername  String?
+  telegramFirstName String?
+  telegramPhone     String?
+
+  status            String   @default("started") // started, generated_pix, paid, failed
+
+  pixAttemptsCount  Int      @default(0)
+  totalMessagesCount Int     @default(0)
+
+  // Plano
+  planDays          Int      @default(30) // Duração do plano em dias
+  inviteLink        String?  // Link de convite gerado
+  inviteLinkExpires DateTime? // Quando o link expira
+
+  lastInteractionAt DateTime?
+  paidAt            DateTime?
+
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  payments          Payment[]
+  interactions      Interaction[]
+  delivery          Delivery?
+
+  @@unique([botId, telegramUserId])
+  @@index([botId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+// Interação (rastreamento)
+model Interaction {
+  id            String   @id @default(cuid())
+  leadId        String
+  lead          Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  type          String   // "message_sent", "button_clicked", "pix_generated", "pix_confirmed"
+  data          Json?    // dados adicionais (qual botão, mensagem, etc)
+
+  createdAt     DateTime @default(now())
+
+  @@index([leadId])
+  @@index([type])
+}
+
+// Fluxo (funil de vendas)
+model Flow {
+  id            String   @id @default(cuid())
+  botId         String
+  bot           Bot      @relation(fields: [botId], references: [id], onDelete: Cascade)
+
+  name          String
+  description   String?
+
+  steps         FlowStep[]
+
+  isActive      Boolean  @default(true)
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([botId])
+}
+
+// Etapa do fluxo
+model FlowStep {
+  id            String   @id @default(cuid())
+  flowId        String
+  flow          Flow     @relation(fields: [flowId], references: [id], onDelete: Cascade)
+
+  order         Int
+  type          String   // "text", "image", "video", "button", "pix", "input"
+
+  content       String?  // texto ou ID do arquivo no Telegram
+  buttons       Json?    // array de botões com callbacks
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@unique([flowId, order])
+  @@index([flowId])
+}
+
+// Pagamento
+model Payment {
+  id                String   @id @default(cuid())
+  userId            String
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  leadId            String
+  lead              Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  amount            Float
+
+  gateway           String   // "pushpay", "syncpay", "mercado_pago"
+  gatewayTxId       String?  // ID da transação no gateway
+
+  status            String   @default("pending") // pending, confirmed, failed, refunded
+
+  qrCode            String?  // QR code PIX
+  copyPaste         String?  // Chave PIX para copiar/colar
+
+  expiresAt         DateTime?
+  confirmedAt       DateTime?
+
+  webhookData       Json?    // dados brutos do webhook do gateway
+
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@index([userId])
+  @@index([leadId])
+  @@index([status])
+  @@index([gatewayTxId])
+}
+
+// Comprovante de entrega
+model Delivery {
+  id            String   @id @default(cuid())
+  leadId        String   @unique
+  lead          Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  channelLink   String   // link do grupo/canal
+  channelType   String   // "group", "channel", "private_channel"
+
+  deliveredAt   DateTime @default(now())
+  confirmedAt   DateTime? // quando confirmou que entrou no grupo
+
+  metadata      Json?    // dados adicionais (message_id, etc)
+}
