@@ -1,9 +1,9 @@
 import { FastifyInstance } from 'fastify';
-import { paymentService } from '../services/payment.service.js.js';
-import { leadService } from '../services/lead.service.js.js';
-import { channelService } from '../services/channel.service.js.js';
-import { bot } from '../bot.js.js';
-import { prisma } from '../db.js.js';
+import { paymentService } from '../services/payment.service.js';
+import { leadService } from '../services/lead.service.js';
+import { channelService } from '../services/channel.service.js';
+import { bot } from '../bot.js';
+import { prisma } from '../db.js';
 
 export async function setupPaymentWebhook(fastify: FastifyInstance) {
   /**

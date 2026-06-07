@@ -1,6 +1,6 @@
-import { startServer } from './server.js.js';
+import { startServer } from './server.js';
 
-startServer().catch((err) => {
+startServer().catch((err: any) => {
   console.error('Failed to start server:', err);
   process.exit(1);
 });

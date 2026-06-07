@@ -1,11 +1,11 @@
 import { Bot, Context, InlineKeyboard } from 'grammy';
-import { config } from './config.js.js';
-import { leadService } from './services/lead.service.js.js';
-import { paymentService } from './services/payment.service.js.js';
-import { pushpayService } from './services/pushpay.service.js.js';
-import { botService } from './services/bot.service.js.js';
-import { planService } from './services/plan.service.js.js';
-import { prisma } from './db.js.js';
+import { config } from './config.js';
+import { leadService } from './services/lead.service.js';
+import { paymentService } from './services/payment.service.js';
+import { pushpayService } from './services/pushpay.service.js';
+import { botService } from './services/bot.service.js';
+import { planService } from './services/plan.service.js';
+import { prisma } from './db.js';
 
 // Store para armazenar botId e dados de sessão
 let defaultBotId = 'default-bot';
