@@ -1,7 +1,7 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
-import { authService } from '../services/auth.service.js';
-import { requireAuth } from '../middleware/auth.js';
-import { prisma } from '../db.js';
+import { authService } from '../services/auth.service';
+import { requireAuth } from '../middleware/auth';
+import { prisma } from '../db';
 
 export async function setupAuthRoutes(fastify: FastifyInstance) {
   /**

@@ -1,7 +1,7 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import { prisma } from '../db.js';
-import { config } from '../config.js';
+import { prisma } from '../db';
+import { config } from '../config';
 
 const JWT_SECRET = config.auth.jwtSecret;
 const JWT_EXPIRY = '7d';

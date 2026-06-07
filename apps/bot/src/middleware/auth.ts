@@ -1,5 +1,5 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
-import { authService } from '../services/auth.service.js';
+import { authService } from '../services/auth.service';
 
 /**
  * Interface para estender contexto do Fastify com usuário autenticado

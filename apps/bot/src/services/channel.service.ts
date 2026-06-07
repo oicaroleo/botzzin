@@ -1,4 +1,4 @@
-import { bot } from '../bot.js';
+import { bot } from '../bot';
 
 // MVP: Configuração fixa para teste
 // Depois será configurável no site

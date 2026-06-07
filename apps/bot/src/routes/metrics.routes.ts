@@ -1,6 +1,6 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
-import { metricsService, DateRange } from '../services/metrics.service.js';
-import { requireAuth } from '../middleware/auth.js';
+import { metricsService, DateRange } from '../services/metrics.service';
+import { requireAuth } from '../middleware/auth';
 
 export async function setupMetricsRoutes(fastify: FastifyInstance) {
   /**
