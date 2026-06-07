@@ -1,13 +1,8 @@
-import type { PrismaClient } from '@prisma/client';
-
-const getPrismaClient = (): typeof PrismaClient => {
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
-  return require('@prisma/client').PrismaClient;
-};
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const { PrismaClient } = require('@prisma/client');
 
 const prismaClientSingleton = () => {
-  const Prisma = getPrismaClient();
-  return new Prisma();
+  return new PrismaClient();
 };
 
 declare global {
