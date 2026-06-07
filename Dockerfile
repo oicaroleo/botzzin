@@ -2,8 +2,8 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-# Install system dependencies for Prisma and nginx
-RUN apk add --no-cache openssl nginx curl
+# Install system dependencies for Prisma
+RUN apk add --no-cache openssl curl
 
 # Install pnpm
 RUN npm install -g pnpm
@@ -11,108 +11,16 @@ RUN npm install -g pnpm
 # Copy workspace root files
 COPY package.json pnpm-workspace.yaml pnpm-lock.yaml* ./
 
-# Copy both apps
+# Copy all apps including new proxy
 COPY apps/bot ./apps/bot
 COPY apps/dashboard ./apps/dashboard
+COPY apps/proxy ./apps/proxy
 
 # Install dependencies
 RUN pnpm install --frozen-lockfile
 
-# Build both apps
-RUN pnpm build
-
-# Setup nginx config
-RUN cat > /etc/nginx/nginx.conf << 'EOF'
-user nginx;
-worker_processes auto;
-error_log /var/log/nginx/error.log warn;
-pid /var/run/nginx.pid;
-
-events {
-    worker_connections 1024;
-}
-
-http {
-    include /etc/nginx/mime.types;
-    default_type application/octet-stream;
-
-    log_format main '$remote_addr - $remote_user [$time_local] "$request" '
-                    '$status $body_bytes_sent "$http_referer" '
-                    '"$http_user_agent" "$http_x_forwarded_for"';
-
-    access_log /var/log/nginx/access.log main;
-
-    sendfile on;
-    tcp_nopush on;
-    tcp_nodelay on;
-    keepalive_timeout 65;
-    types_hash_max_size 2048;
-    gzip on;
-
-    upstream bot_backend {
-        server 127.0.0.1:3001;
-    }
-
-    upstream dashboard_frontend {
-        server 127.0.0.1:3000;
-    }
-
-    server {
-        listen 8080;
-        server_name _;
-
-        # Proxy API calls to Fastify
-        location /api/ {
-            proxy_pass http://bot_backend;
-            proxy_http_version 1.1;
-            proxy_set_header Host $host;
-            proxy_set_header X-Real-IP $remote_addr;
-            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-            proxy_set_header X-Forwarded-Proto $scheme;
-        }
-
-        # Proxy webhook calls to Fastify
-        location /webhook {
-            proxy_pass http://bot_backend;
-            proxy_http_version 1.1;
-            proxy_set_header Host $host;
-            proxy_set_header X-Real-IP $remote_addr;
-            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-            proxy_set_header X-Forwarded-Proto $scheme;
-        }
-
-        # Proxy admin calls to Fastify
-        location /admin/ {
-            proxy_pass http://bot_backend;
-            proxy_http_version 1.1;
-            proxy_set_header Host $host;
-            proxy_set_header X-Real-IP $remote_addr;
-            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-            proxy_set_header X-Forwarded-Proto $scheme;
-        }
-
-        # Health check from Fastify
-        location /health {
-            proxy_pass http://bot_backend;
-            proxy_http_version 1.1;
-            proxy_set_header Host $host;
-        }
-
-        # Everything else goes to Next.js dashboard
-        location / {
-            proxy_pass http://dashboard_frontend;
-            proxy_http_version 1.1;
-            proxy_set_header Upgrade $http_upgrade;
-            proxy_set_header Connection 'upgrade';
-            proxy_set_header Host $host;
-            proxy_set_header X-Real-IP $remote_addr;
-            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-            proxy_set_header X-Forwarded-Proto $scheme;
-            proxy_cache_bypass $http_upgrade;
-        }
-    }
-}
-EOF
+# Build bot and dashboard apps (proxy doesn't need building)
+RUN pnpm --filter @botzzin/bot build && pnpm --filter dashboard build
 
 # Expose port
 EXPOSE 8080
@@ -181,30 +89,37 @@ while [ $RETRY -lt $MAX_RETRIES ]; do
 done
 
 echo ""
-echo "=== Verifying backend is still responding ==="
-if ! curl -f -s http://127.0.0.1:3001/health > /dev/null 2>&1; then
-  echo "⚠ WARNING: Backend stopped responding!"
-fi
+echo "=== Starting HTTP reverse proxy on port 8080 ==="
+cd /app/apps/proxy
+PORT=8080 npm run start > /tmp/proxy.log 2>&1 &
+PROXY_PID=$!
+echo "Proxy started with PID $PROXY_PID"
 
 echo ""
-echo "=== Starting nginx reverse proxy on port 8080 ==="
-mkdir -p /var/log/nginx
-nginx -g "daemon off;" &
-NGINX_PID=$!
-echo "Nginx started with PID $NGINX_PID"
+echo "=== Waiting for proxy to be ready (max 10 seconds) ==="
+RETRY=0
+while [ $RETRY -lt 5 ]; do
+  if curl -f -s http://127.0.0.1:8080/health > /dev/null 2>&1; then
+    echo "✓ Proxy is ready!"
+    break
+  fi
+  RETRY=$((RETRY + 1))
+  echo "  Attempt $RETRY/5..."
+  sleep 2
+done
 
 echo ""
 echo "✓ All services started!"
 echo ""
 echo "Service endpoints:"
-echo "  Backend API: http://127.0.0.1:3001"
-echo "  Dashboard: http://127.0.0.1:3000"
-echo "  Public (nginx): http://127.0.0.1:8080"
+echo "  Backend API:  http://127.0.0.1:3001"
+echo "  Dashboard:    http://127.0.0.1:3000"
+echo "  Public proxy: http://127.0.0.1:8080"
 echo ""
 echo "Live logs:"
 echo "  tail -f /tmp/bot.log"
 echo "  tail -f /tmp/dashboard.log"
-echo "  tail -f /var/log/nginx/error.log"
+echo "  tail -f /tmp/proxy.log"
 echo ""
 echo "=== All systems operational ==="
 

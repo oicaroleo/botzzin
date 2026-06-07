@@ -1,0 +1,16 @@
+{
+  "name": "@botzzin/proxy",
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "http-proxy": "^1.18.1"
+  },
+  "devDependencies": {
+    "@types/http-proxy": "^1.17.14",
+    "@types/node": "^20.14.0",
+    "typescript": "^5.4.0"
+  }
+}
