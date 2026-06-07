@@ -1,0 +1,53 @@
+FROM node:20-alpine
+
+WORKDIR /app
+
+# Install system dependencies for Prisma
+RUN apk add --no-cache openssl curl
+
+# Install pnpm
+RUN npm install -g pnpm
+
+# Copy workspace root files
+COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
+
+# Copy only the bot app
+COPY apps/bot ./apps/bot
+
+# Install dependencies
+RUN pnpm install --frozen-lockfile
+
+# Build bot app
+RUN pnpm --filter @botzzin/bot build
+
+# Expose port
+EXPOSE 3001
+
+# Create startup script for backend only
+RUN cat > /app/entrypoint-backend.sh << 'SCRIPT'
+#!/bin/sh
+set -e
+
+echo "=== Starting BotZZIN Backend Service ==="
+
+echo ""
+echo "=== Syncing database schema with Prisma ==="
+cd /app/apps/bot
+npx prisma db push --skip-generate --accept-data-loss || {
+  echo "WARNING: Database sync failed, continuing anyway..."
+}
+
+echo ""
+echo "=== Starting Fastify backend on port 3001 ==="
+cd /app/apps/bot
+PORT=3001 node dist/index.js
+SCRIPT
+
+RUN chmod +x /app/entrypoint-backend.sh
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
+  CMD curl -f http://localhost:3001/health || exit 1
+
+# Start
+CMD ["/app/entrypoint-backend.sh"]
