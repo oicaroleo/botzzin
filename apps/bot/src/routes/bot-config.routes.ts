@@ -132,7 +132,7 @@ export async function setupBotConfigRoutes(fastify: FastifyInstance) {
         }
 
         // Buscar token do bot
-        const { prisma } = await import('../db');
+        const { prisma } = await import('../db.js');
         const bot = await prisma.bot.findFirst({
           where: { id: botId, userId },
         });
@@ -179,7 +179,7 @@ export async function setupBotConfigRoutes(fastify: FastifyInstance) {
         }
 
         // Buscar token do bot
-        const { prisma } = await import('../db');
+        const { prisma } = await import('../db.js');
         const bot = await prisma.bot.findFirst({
           where: { id: botId, userId },
         });
