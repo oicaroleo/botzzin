@@ -18,7 +18,7 @@ export async function createServer() {
   // CORS - permitir requisições do dashboard
   await fastify.register(cors, {
     origin: ['http://localhost:3000', 'http://localhost:3001', 'https://botzzin-production.up.railway.app'],
-    credentials: true,
+    credentials: false,
   });
 
   // Setup autenticação

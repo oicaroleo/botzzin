@@ -4,6 +4,7 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://botzzin-production.u
 
 export const api = axios.create({
   baseURL: API_URL,
+  withCredentials: false,
 });
 
 // Interceptor para adicionar token
