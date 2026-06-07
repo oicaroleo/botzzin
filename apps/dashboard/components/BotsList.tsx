@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 interface Bot {
   id: string;
@@ -16,11 +17,12 @@ interface BotsListProps {
 }
 
 export default function BotsList({ bots }: BotsListProps) {
+  const router = useRouter();
+
   return (
     <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
       {bots.map((bot) => (
-        <Link key={bot.id} href={`/dashboard/bots/${bot.id}`}>
-          <div className="bg-white rounded-lg shadow hover:shadow-lg transition-shadow p-6 cursor-pointer">
+        <div key={bot.id} className="bg-white rounded-lg shadow hover:shadow-lg transition-shadow p-6">
             <div className="flex items-start justify-between mb-4">
               <div>
                 <h3 className="text-lg font-semibold text-gray-900">
@@ -42,15 +44,20 @@ export default function BotsList({ bots }: BotsListProps) {
             </div>
 
             <div className="flex gap-2">
-              <button className="flex-1 bg-purple-600 hover:bg-purple-700 text-white py-2 px-4 rounded transition-colors text-sm font-semibold">
+              <button
+                onClick={() => router.push(`/dashboard/bots/${bot.id}`)}
+                className="flex-1 bg-purple-600 hover:bg-purple-700 text-white py-2 px-4 rounded transition-colors text-sm font-semibold"
+              >
                 Configurar
               </button>
-              <button className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded transition-colors text-sm font-semibold">
+              <button
+                onClick={() => router.push(`/dashboard/bots/${bot.id}/metrics`)}
+                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded transition-colors text-sm font-semibold"
+              >
                 Métricas
               </button>
             </div>
           </div>
-        </Link>
       ))}
     </div>
   );

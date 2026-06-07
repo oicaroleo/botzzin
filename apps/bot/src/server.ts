@@ -1,5 +1,4 @@
 import Fastify from 'fastify';
-import cors from '@fastify/cors';
 import { bot } from './bot.js';
 import { config } from './config.js';
 import { setupPaymentWebhook } from './handlers/payment-webhook.js';
@@ -15,10 +14,20 @@ export async function createServer() {
     logger: true,
   });
 
-  // CORS - permitir requisições do dashboard
-  await fastify.register(cors, {
-    origin: ['http://localhost:3000', 'http://localhost:3001', 'https://botzzin-production.up.railway.app'],
-    credentials: false,
+  // CORS manual - adicionar headers
+  fastify.addHook('preHandler', async (request, reply) => {
+    const origin = request.headers.origin;
+    const allowedOrigins = ['http://localhost:3000', 'http://localhost:3001', 'https://botzzin-production.up.railway.app'];
+
+    if (origin && allowedOrigins.includes(origin)) {
+      reply.header('Access-Control-Allow-Origin', origin);
+      reply.header('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
+      reply.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    }
+
+    if (request.method === 'OPTIONS') {
+      return reply.send();
+    }
   });
 
   // Setup autenticação
