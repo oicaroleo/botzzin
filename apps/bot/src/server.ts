@@ -1,4 +1,5 @@
 import Fastify from 'fastify';
+import cors from '@fastify/cors';
 import { bot } from './bot.js';
 import { config } from './config.js';
 import { setupPaymentWebhook } from './handlers/payment-webhook.js';
@@ -12,6 +13,12 @@ import { setupMetricsRoutes } from './routes/metrics.routes.js';
 export async function createServer() {
   const fastify = Fastify({
     logger: true,
+  });
+
+  // CORS - permitir requisições do dashboard
+  await fastify.register(cors, {
+    origin: ['http://localhost:3000', 'http://localhost:3001', 'https://botzzin-production.up.railway.app'],
+    credentials: true,
   });
 
   // Setup autenticação
