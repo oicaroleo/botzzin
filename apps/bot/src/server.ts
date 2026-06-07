@@ -1,13 +1,13 @@
 import Fastify from 'fastify';
-import { bot } from './bot.js';
-import { config } from './config.js';
-import { setupPaymentWebhook } from './handlers/payment-webhook.js';
-import { setupAuthMiddleware } from './middleware/auth.js';
-import { setupAuthRoutes } from './routes/auth.routes.js';
-import { setupBotsRoutes } from './routes/bots.routes.js';
-import { setupBotConfigRoutes } from './routes/bot-config.routes.js';
-import { setupPlansRoutes } from './routes/plans.routes.js';
-import { setupMetricsRoutes } from './routes/metrics.routes.js';
+import { bot } from './bot.js.js';
+import { config } from './config.js.js';
+import { setupPaymentWebhook } from './handlers/payment-webhook.js.js';
+import { setupAuthMiddleware } from './middleware/auth.js.js';
+import { setupAuthRoutes } from './routes/auth.routes.js.js';
+import { setupBotsRoutes } from './routes/bots.routes.js.js';
+import { setupBotConfigRoutes } from './routes/bot-config.routes.js.js';
+import { setupPlansRoutes } from './routes/plans.routes.js.js';
+import { setupMetricsRoutes } from './routes/metrics.routes.js.js';
 
 export async function createServer() {
   const fastify = Fastify({

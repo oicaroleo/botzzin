@@ -1,6 +1,6 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
-import { botConfigService, BotConfigInput } from '../services/bot-config.service';
-import { requireAuth } from '../middleware/auth';
+import { botConfigService, BotConfigInput } from '../services/bot-config.service.js';
+import { requireAuth } from '../middleware/auth.js';
 
 export async function setupBotConfigRoutes(fastify: FastifyInstance) {
   /**

@@ -1,5 +1,5 @@
-import { prisma } from '../db';
-import { config } from '../config';
+import { prisma } from '../db.js';
+import { config } from '../config.js';
 
 export class BotService {
   /**

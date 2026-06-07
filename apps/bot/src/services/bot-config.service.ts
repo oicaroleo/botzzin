@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { prisma } from '../db';
+import { prisma } from '../db.js';
 
 export interface BotConfigInput {
   channelId?: string;
