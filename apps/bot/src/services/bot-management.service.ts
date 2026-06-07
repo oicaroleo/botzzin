@@ -96,7 +96,7 @@ export class BotManagementService {
       orderBy: { createdAt: 'desc' },
     });
 
-    return bots.map((bot) => this.formatBotResponse(bot));
+    return bots.map((bot: any) => this.formatBotResponse(bot));
   }
 
   /**

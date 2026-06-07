@@ -13,7 +13,7 @@ export async function setupBotsRoutes(fastify: FastifyInstance) {
     async (request: FastifyRequest, reply: FastifyReply) => {
       try {
         const userId = (request as any).userId;
-        const { telegramBotToken, name } = request.body;
+        const { telegramBotToken, name } = request.body as BotCreateInput;
 
         if (!telegramBotToken) {
           return reply.code(400).send({
@@ -100,7 +100,7 @@ export async function setupBotsRoutes(fastify: FastifyInstance) {
       try {
         const userId = (request as any).userId;
         const { botId } = request.params as { botId: string };
-        const data = request.body;
+        const data = request.body as BotUpdateInput;
 
         const bot = await botManagementService.updateBot(botId, userId, data);
 

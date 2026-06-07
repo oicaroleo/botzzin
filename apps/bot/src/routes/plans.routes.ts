@@ -14,7 +14,7 @@ export async function setupPlansRoutes(fastify: FastifyInstance) {
       try {
         const userId = (request as any).userId;
         const { botId } = request.params as { botId: string };
-        const data = request.body;
+        const data = request.body as PlanInput;
 
         const plan = await planService.createPlan(botId, userId, data);
 
@@ -93,7 +93,7 @@ export async function setupPlansRoutes(fastify: FastifyInstance) {
       try {
         const userId = (request as any).userId;
         const { botId, planId } = request.params as { botId: string; planId: string };
-        const data = request.body;
+        const data = request.body as Partial<PlanInput>;
 
         const plan = await planService.updatePlan(botId, planId, userId, data);
 

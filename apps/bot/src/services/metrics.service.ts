@@ -203,7 +203,7 @@ export class MetricsService {
     ]);
 
     return {
-      leads: leads.map((lead) => this.formatLeadResponse(lead)),
+      leads: (leads as any[]).map((lead: any) => this.formatLeadResponse(lead)),
       pagination: {
         page,
         pageSize,
@@ -302,7 +302,7 @@ export class MetricsService {
     }
 
     // Somar receitas
-    payments.forEach((payment) => {
+    (payments as any[]).forEach((payment: any) => {
       if (payment.confirmedAt) {
         const dateStr = payment.confirmedAt.toISOString().split('T')[0];
         chartData[dateStr] = (chartData[dateStr] || 0) + payment.amount;

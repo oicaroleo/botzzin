@@ -149,7 +149,7 @@ export class BotConfigService {
         timeout: 5000,
       });
 
-      return { success: response.status === 200 };
+      return { success: (response as any).status === 200 };
     } catch (error: any) {
       return {
         success: false,

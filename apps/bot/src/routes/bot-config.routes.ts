@@ -39,7 +39,7 @@ export async function setupBotConfigRoutes(fastify: FastifyInstance) {
       try {
         const userId = (request as any).userId;
         const { botId } = request.params as { botId: string };
-        const data = request.body;
+        const data = request.body as BotConfigInput;
 
         const config = await botConfigService.updateConfig(botId, userId, data);
 
@@ -65,7 +65,7 @@ export async function setupBotConfigRoutes(fastify: FastifyInstance) {
       try {
         const userId = (request as any).userId;
         const { botId } = request.params as { botId: string };
-        const data = request.body;
+        const data = request.body as Partial<BotConfigInput>;
 
         const config = await botConfigService.updateConfig(botId, userId, data);
 
@@ -91,7 +91,7 @@ export async function setupBotConfigRoutes(fastify: FastifyInstance) {
       try {
         const userId = (request as any).userId;
         const { botId } = request.params as { botId: string };
-        const { mediaUrl } = request.body;
+        const { mediaUrl } = request.body as { mediaUrl: string };
 
         if (!mediaUrl) {
           return reply.code(400).send({

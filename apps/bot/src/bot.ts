@@ -65,7 +65,9 @@ export const bot = new Bot(config.telegram.botToken!, {
     can_read_all_group_messages: false,
     supports_inline_queries: false,
     can_connect_to_business: false,
-  },
+    can_manage_bots: false,
+    has_main_web_app: false,
+  } as any,
 });
 
 // Store temporário para rastrear leads durante a sessão

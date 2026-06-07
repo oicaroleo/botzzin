@@ -12,7 +12,7 @@ export async function setupAuthRoutes(fastify: FastifyInstance) {
     '/api/auth/signup',
     async (request: FastifyRequest, reply: FastifyReply) => {
       try {
-        const { email, password, name } = request.body;
+        const { email, password, name } = request.body as { email: string; password: string; name?: string };
 
         const result = await authService.signup(email, password, name);
 
@@ -35,7 +35,7 @@ export async function setupAuthRoutes(fastify: FastifyInstance) {
     '/api/auth/login',
     async (request: FastifyRequest, reply: FastifyReply) => {
       try {
-        const { email, password } = request.body;
+        const { email, password } = request.body as { email: string; password: string };
 
         const result = await authService.login(email, password);
 
