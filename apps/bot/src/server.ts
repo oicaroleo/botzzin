@@ -40,7 +40,7 @@ export async function createServer() {
     return { status: 'ok' };
   });
 
-  // Webhook do Telegram
+  // Webhook do Telegram - recebe updates
   fastify.post('/webhook', async (request, reply) => {
     if (request.method === 'POST') {
       try {
