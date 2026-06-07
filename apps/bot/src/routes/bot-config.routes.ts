@@ -1,6 +1,7 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { botConfigService, BotConfigInput } from '../services/bot-config.service.js';
 import { requireAuth } from '../middleware/auth.js';
+import { prisma } from '../db.js';
 
 export async function setupBotConfigRoutes(fastify: FastifyInstance) {
   /**
@@ -132,7 +133,6 @@ export async function setupBotConfigRoutes(fastify: FastifyInstance) {
         }
 
         // Buscar token do bot
-        const { prisma } = await import('../db.js');
         const bot = await prisma.bot.findFirst({
           where: { id: botId, userId },
         });
@@ -179,7 +179,6 @@ export async function setupBotConfigRoutes(fastify: FastifyInstance) {
         }
 
         // Buscar token do bot
-        const { prisma } = await import('../db.js');
         const bot = await prisma.bot.findFirst({
           where: { id: botId, userId },
         });
