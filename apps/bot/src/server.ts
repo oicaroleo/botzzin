@@ -9,6 +9,7 @@ import { setupBotConfigRoutes } from './routes/bot-config.routes.js';
 import { setupPlansRoutes } from './routes/plans.routes.js';
 import { setupMetricsRoutes } from './routes/metrics.routes.js';
 import { setupWebhooksRoutes } from './routes/webhooks.routes.js';
+import { getBotInstance } from './bot-factory.js';
 
 export async function createServer() {
   const fastify = Fastify({
@@ -80,9 +81,11 @@ export async function createServer() {
     try {
       console.log('[WEBHOOK] Received update for bot:', botId);
 
-      // TODO: Implementar roteamento por botId
-      // Por enquanto, usar o bot global
-      await bot.handleUpdate(request.body as any);
+      // Obter instância de bot específica
+      const botInstance = await getBotInstance(botId);
+
+      // Processar update com o bot correto
+      await botInstance.bot.handleUpdate(request.body as any);
     } catch (err) {
       console.error('[WEBHOOK ERROR]', err);
     }

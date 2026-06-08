@@ -1,5 +1,6 @@
 import { FastifyInstance } from 'fastify';
 import { config } from '../config.js';
+import { prisma } from '../db.js';
 
 export async function setupWebhooksRoutes(fastify: FastifyInstance) {
   /**
