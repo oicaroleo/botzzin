@@ -24,10 +24,11 @@ const server = http.createServer((req, res) => {
   // Extract path without query string for routing decision
   const path = req.url.split('?')[0];
 
+  // Rotas para backend
   const isBackendRoute =
-    path.startsWith('/api') ||
-    path.startsWith('/webhook') ||
-    path.startsWith('/admin') ||
+    path.startsWith('/api/') || path === '/api' ||
+    path.startsWith('/webhook/') || path === '/webhook' || path.startsWith('/webhook-') ||
+    path.startsWith('/admin/') || path === '/admin' ||
     path === '/health';
 
   if (isBackendRoute) {
