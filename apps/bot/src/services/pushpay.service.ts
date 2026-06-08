@@ -23,7 +23,9 @@ export class PushpayService {
   private apiKey = config.gateways.pushpay.apiKey;
 
   constructor() {
-    if (!this.apiKey) {
+    // Only validate API key for server mode
+    const mode = process.env.BOT_MODE || 'server';
+    if (mode === 'server' && !this.apiKey) {
       throw new Error('PUSHPAY_API_KEY não configurado');
     }
   }
