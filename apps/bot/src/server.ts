@@ -65,15 +65,25 @@ export async function createServer() {
   // Cada bot usa: POST /webhook/{botId}
   fastify.post<{ Params: { botId: string } }>('/webhook/:botId', async (request, reply) => {
     const { botId } = request.params;
+    const update = request.body as any;
 
     try {
+      console.log('[WEBHOOK] ========================================');
       console.log('[WEBHOOK] Received update for bot:', botId);
+      console.log('[WEBHOOK] Update type:', update.message ? 'message' : update.callback_query ? 'callback' : 'unknown');
+      console.log('[WEBHOOK] From user:', update.message?.from?.id || update.callback_query?.from?.id);
+      console.log('[WEBHOOK] ========================================');
 
       // Obter instância de bot específica
       const botInstance = await getBotInstance(botId);
 
+      console.log('[WEBHOOK] Bot instance retrieved:', botInstance.botId);
+      console.log('[WEBHOOK] Bot token (first 20):', botInstance.token.substring(0, 20));
+
       // Processar update com o bot correto
-      await botInstance.bot.handleUpdate(request.body as any);
+      await botInstance.bot.handleUpdate(update);
+
+      console.log('[WEBHOOK] Update processed successfully');
     } catch (err) {
       console.error('[WEBHOOK ERROR]', err);
     }
