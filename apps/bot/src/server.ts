@@ -69,13 +69,23 @@ export async function createServer() {
   });
 
   // Endpoint para registrar webhook no Telegram (admin)
-  fastify.post('/admin/setup-webhook', async (request, reply) => {
+  fastify.post<{ Querystring: { botId?: string; token?: string } }>('/admin/setup-webhook', async (request, reply) => {
     try {
+      const { botId, token } = request.query;
+
+      if (!token) {
+        return reply.code(400).send({ error: 'Token do bot é obrigatório (parâmetro ?token=...)' });
+      }
+
       const webhookUrl = `${config.telegram.webhookUrl}/webhook`;
 
-      // Chamar setWebhook via API
+      console.log('[SETUP WEBHOOK] Setting webhook for bot:', botId);
+      console.log('[SETUP WEBHOOK] Webhook URL:', webhookUrl);
+      console.log('[SETUP WEBHOOK] Token:', token.substring(0, 20) + '...');
+
+      // Chamar setWebhook via API com token do bot
       const response = await fetch(
-        `https://api.telegram.org/bot${config.telegram.botToken}/setWebhook`,
+        `https://api.telegram.org/bot${token}/setWebhook`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -85,8 +95,10 @@ export async function createServer() {
 
       const data = await response.json();
 
-      if (!response.ok) {
-        return reply.code(400).send({ error: data });
+      console.log('[SETUP WEBHOOK] Telegram API response:', data);
+
+      if (!response.ok || !data.ok) {
+        return reply.code(400).send({ error: 'Erro ao configurar webhook com Telegram', details: data });
       }
 
       reply.send({

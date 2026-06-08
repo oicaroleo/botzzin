@@ -64,3 +64,12 @@ export const metricsAPI = {
   conversion: (botId: string, days?: number) =>
     api.get(`/api/bots/${botId}/charts/conversion`, { params: { days } }),
 };
+
+export const webhookAPI = {
+  setupWebhook: (botToken: string, botId?: string) => {
+    const params = new URLSearchParams();
+    params.append('token', botToken);
+    if (botId) params.append('botId', botId);
+    return api.post(`/admin/setup-webhook?${params.toString()}`, {});
+  },
+};

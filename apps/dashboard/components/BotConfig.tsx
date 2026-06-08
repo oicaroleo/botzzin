@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { botsAPI } from '@/lib/api';
+import { botsAPI, webhookAPI } from '@/lib/api';
 
 interface BotConfigProps {
   bot: any;
@@ -13,6 +13,7 @@ export default function BotConfig({ bot, botId, onUpdate }: BotConfigProps) {
   const [welcomeMessage, setWelcomeMessage] = useState(bot.welcomeMessage || '');
   const [channelId, setChannelId] = useState(bot.defaultChannelId || '');
   const [loading, setLoading] = useState(false);
+  const [webhookLoading, setWebhookLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
@@ -40,6 +41,23 @@ export default function BotConfig({ bot, botId, onUpdate }: BotConfigProps) {
     }
   };
 
+  const handleActivateWebhook = async () => {
+    setError('');
+    setSuccess('');
+    setWebhookLoading(true);
+
+    try {
+      const response = await webhookAPI.setupWebhook(bot.telegramBotToken, botId);
+      setSuccess(`✅ Webhook ativado com sucesso! Bot está pronto para responder no Telegram.`);
+      onUpdate();
+    } catch (err: any) {
+      const errorMsg = err.response?.data?.error || err.message || 'Erro ao ativar webhook';
+      setError(`❌ ${errorMsg}`);
+    } finally {
+      setWebhookLoading(false);
+    }
+  };
+
   return (
     <div className="max-w-2xl bg-white rounded-lg shadow p-8">
       <h2 className="text-2xl font-bold text-gray-900 mb-6">Configuração do Bot</h2>
@@ -59,7 +77,16 @@ export default function BotConfig({ bot, botId, onUpdate }: BotConfigProps) {
       <div className="space-y-6">
         {/* Informações do Bot */}
         <div className="bg-gray-50 p-6 rounded-lg">
-          <h3 className="font-semibold text-gray-900 mb-4">Informações do Bot</h3>
+          <div className="flex justify-between items-start mb-4">
+            <h3 className="font-semibold text-gray-900">Informações do Bot</h3>
+            <button
+              onClick={handleActivateWebhook}
+              disabled={webhookLoading}
+              className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold py-2 px-3 rounded-lg transition-colors disabled:opacity-50"
+            >
+              {webhookLoading ? '⏳ Ativando...' : '🚀 Ativar Webhook'}
+            </button>
+          </div>
           <div className="grid gap-4">
             <div>
               <label className="text-sm text-gray-600">Username</label>
