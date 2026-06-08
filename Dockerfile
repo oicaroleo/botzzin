@@ -40,15 +40,18 @@ cleanup() {
 }
 trap cleanup SIGTERM SIGINT
 
-echo ""
-echo "=== Syncing database schema with Prisma ==="
-cd /app/apps/bot
-npx prisma db push --skip-generate --accept-data-loss || {
-  echo "WARNING: Database sync failed, continuing anyway..."
-}
-
-# Determine mode of operation
+# Determine mode of operation first
 BOT_MODE=${BOT_MODE:-server}
+
+# Only sync database for server mode
+if [ "$BOT_MODE" = "server" ]; then
+  echo ""
+  echo "=== Syncing database schema with Prisma ==="
+  cd /app/apps/bot
+  npx prisma db push --skip-generate --accept-data-loss || {
+    echo "WARNING: Database sync failed, continuing anyway..."
+  }
+fi
 echo ""
 echo "=== Starting in mode: $BOT_MODE ==="
 

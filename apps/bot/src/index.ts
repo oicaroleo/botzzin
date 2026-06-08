@@ -33,8 +33,10 @@ async function main() {
 
     console.log(`[INIT] Starting in mode: ${mode}`);
 
-    // Inicializar database
-    await initializeDatabase();
+    // Apenas sincronizar database em modo server
+    if (mode === 'server') {
+      await initializeDatabase();
+    }
 
     // Inicializar Redis
     await initRedis();
