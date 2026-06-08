@@ -22,10 +22,16 @@ export const config = {
   },
 };
 
-if (!config.telegram.botToken) {
-  throw new Error('TELEGRAM_BOT_TOKEN não configurado');
-}
+// Only validate telegram config for server mode
+// Worker and manager modes don't need these
+const mode = process.env.BOT_MODE || 'server';
 
-if (!config.telegram.webhookUrl) {
-  throw new Error('WEBHOOK_URL não configurado');
+if (mode === 'server') {
+  if (!config.telegram.botToken) {
+    throw new Error('TELEGRAM_BOT_TOKEN não configurado');
+  }
+
+  if (!config.telegram.webhookUrl) {
+    throw new Error('WEBHOOK_URL não configurado');
+  }
 }
