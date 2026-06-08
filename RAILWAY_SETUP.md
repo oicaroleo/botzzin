@@ -42,31 +42,45 @@ Timeout: 10s
 Start period: 60s
 ```
 
-## Step 3: Adicionar Bot Workers
+## Step 3: Adicionar Bot Workers (AUTOMÁTICO) ⭐
 
-Para cada bot que você quer processar, crie um novo serviço:
+### Opção A: Worker Manager (Recomendado)
 
-### Service Name
+Inicia automaticamente um worker para **cada bot no banco**:
 
-```
-bot-worker-{numero}
-```
+1. Clique **"Add Service"** → **"Dockerfile"**
+2. Name: `bot-worker-manager`
+3. Variables: 
+   ```
+   BOT_MODE=manager
+   ```
+4. Deploy
 
-### Variables
+**Pronto!** Railway automaticamente:
+- Lê todos os bots do banco
+- Inicia um worker para cada um
+- Se adicionar novo bot no banco, reinicie o manager
 
-```
-BOT_MODE=worker
-BOT_ID={copiar-do-banco-de-dados}
-```
+### Opção B: Worker Individual (Manual)
 
-### Build
+Se prefere controlar cada bot:
 
-- Mesmo Dockerfile
-- Não precisa expor porta
+1. Clique **"Add Service"** → **"Dockerfile"**
+2. Name: `bot-worker-{numero}`
+3. Variables:
+   ```
+   BOT_MODE=worker
+   BOT_ID={copiar-do-banco-de-dados}
+   ```
+4. Deploy
+5. **Repita para cada bot**
 
-### Múltiplos Workers
+### Escalar um Bot Específico
 
-Se quer escalar um bot específico (processar mais mensagens), crie múltiplas instâncias do worker com o mesmo `BOT_ID`.
+Se um bot recebe muitas mensagens, crie múltiplas instâncias:
+- bot-worker-premium-1 (BOT_MODE=worker, BOT_ID=bot1)
+- bot-worker-premium-2 (BOT_MODE=worker, BOT_ID=bot1)
+- bot-worker-premium-3 (BOT_MODE=worker, BOT_ID=bot1)
 
 ## Step 4: Variáveis Globais (compartilhadas)
 

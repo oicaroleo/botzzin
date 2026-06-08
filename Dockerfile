@@ -132,9 +132,15 @@ elif [ "$BOT_MODE" = "worker" ]; then
   cd /app/apps/bot
   PORT=3001 node dist/index.js
 
+elif [ "$BOT_MODE" = "manager" ]; then
+  echo ""
+  echo "=== Starting bot worker manager (auto-detect from database) ==="
+  cd /app/apps/bot
+  PORT=3001 node dist/index.js
+
 else
   echo "ERROR: Unknown BOT_MODE: $BOT_MODE"
-  echo "Valid modes: server, worker"
+  echo "Valid modes: server, worker, manager"
   exit 1
 fi
 

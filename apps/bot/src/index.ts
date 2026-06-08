@@ -1,5 +1,6 @@
 import { startServer } from './server.js';
 import { startBotWorker } from './bot-worker.js';
+import { startWorkerManager } from './worker-manager.js';
 import { initRedis } from './redis.js';
 import { prisma } from './db.js';
 
@@ -47,8 +48,11 @@ async function main() {
       }
       console.log(`[INIT] Starting bot worker for: ${botId}`);
       await startBotWorker(botId);
+    } else if (mode === 'manager') {
+      console.log('[INIT] Starting worker manager (auto-detect bots)...');
+      await startWorkerManager();
     } else {
-      console.error(`[INIT] Unknown mode: ${mode}`);
+      console.error(`[INIT] Unknown mode: ${mode}. Valid modes: server, worker, manager`);
       process.exit(1);
     }
   } catch (err: any) {
