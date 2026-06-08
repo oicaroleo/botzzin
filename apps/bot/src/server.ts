@@ -61,18 +61,6 @@ export async function createServer() {
     return { status: 'ok' };
   });
 
-  // Webhook do Telegram - recebe updates (compatibilidade com bot único)
-  fastify.post('/webhook', async (request, reply) => {
-    if (request.method === 'POST') {
-      try {
-        await bot.handleUpdate(request.body as any);
-      } catch (err) {
-        console.error('[WEBHOOK ERROR]', err);
-      }
-    }
-    reply.send({ ok: true });
-  });
-
   // Webhook específico por bot (multi-tenant)
   // Cada bot usa: POST /webhook/{botId}
   fastify.post<{ Params: { botId: string } }>('/webhook/:botId', async (request, reply) => {
