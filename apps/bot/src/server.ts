@@ -61,6 +61,33 @@ export async function createServer() {
     return { status: 'ok' };
   });
 
+  // Teste webhook
+  fastify.get<{ Params: { botId: string } }>('/webhook-test/:botId', async (request, reply) => {
+    const { botId } = request.params;
+
+    try {
+      const botConfig = await prisma.bot.findUnique({
+        where: { id: botId },
+        select: { id: true, telegramBotId: true, telegramUsername: true, telegramBotToken: true },
+      });
+
+      if (!botConfig) {
+        return reply.code(404).send({ error: 'Bot not found', botId });
+      }
+
+      return {
+        status: 'ok',
+        botId: botConfig.id,
+        telegramBotId: botConfig.telegramBotId,
+        telegramUsername: botConfig.telegramUsername,
+        token: botConfig.telegramBotToken.substring(0, 20) + '...',
+        webhookUrl: `${config.telegram.webhookUrl}/webhook/${botId}`,
+      };
+    } catch (err) {
+      return reply.code(500).send({ error: String(err) });
+    }
+  });
+
   // Webhook específico por bot (multi-tenant)
   // Cada bot usa: POST /webhook/{botId}
   fastify.post<{ Params: { botId: string } }>('/webhook/:botId', async (request, reply) => {
