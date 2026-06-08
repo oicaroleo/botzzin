@@ -1,4 +1,5 @@
-import { startServer } from './server.js';
+// Import dinamicamente para evitar inicializar bot.ts em modos worker/manager
+// import { startServer } from './server.js';
 import { startBotWorker } from './bot-worker.js';
 import { startWorkerManager } from './worker-manager.js';
 import { initRedis } from './redis.js';
@@ -40,6 +41,7 @@ async function main() {
 
     if (mode === 'server') {
       console.log('[INIT] Starting webhook server...');
+      const { startServer } = await import('./server.js');
       await startServer();
     } else if (mode === 'worker') {
       if (!botId) {
