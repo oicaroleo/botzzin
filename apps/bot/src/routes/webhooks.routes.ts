@@ -4,7 +4,7 @@ import { config } from '../config.js';
 export async function setupWebhooksRoutes(fastify: FastifyInstance) {
   /**
    * Ativar webhook para um bot específico
-   * POST /api/webhooks/setup?token=<bot_token>
+   * POST /api/webhooks/setup?token=<bot_token>&botId=<bot_id>
    */
   fastify.post('/api/webhooks/setup', async (request, reply) => {
     try {
@@ -14,7 +14,12 @@ export async function setupWebhooksRoutes(fastify: FastifyInstance) {
         return reply.code(400).send({ error: 'Token do bot é obrigatório (parâmetro ?token=...)' });
       }
 
-      const webhookUrl = `${config.telegram.webhookUrl}/webhook`;
+      if (!botId) {
+        return reply.code(400).send({ error: 'Bot ID é obrigatório (parâmetro ?botId=...)' });
+      }
+
+      // Usar webhook específico por bot: /webhook/{botId}
+      const webhookUrl = `${config.telegram.webhookUrl}/webhook/${botId}`;
 
       console.log('[SETUP WEBHOOK] Setting webhook for bot:', botId);
       console.log('[SETUP WEBHOOK] Webhook URL:', webhookUrl);
@@ -57,7 +62,12 @@ export async function setupWebhooksRoutes(fastify: FastifyInstance) {
         return reply.code(400).send({ error: 'Token do bot é obrigatório (parâmetro ?token=...)' });
       }
 
-      const webhookUrl = `${config.telegram.webhookUrl}/webhook`;
+      if (!botId) {
+        return reply.code(400).send({ error: 'Bot ID é obrigatório (parâmetro ?botId=...)' });
+      }
+
+      // Usar webhook específico por bot: /webhook/{botId}
+      const webhookUrl = `${config.telegram.webhookUrl}/webhook/${botId}`;
 
       console.log('[SETUP WEBHOOK] Setting webhook for bot:', botId);
       console.log('[SETUP WEBHOOK] Webhook URL:', webhookUrl);
