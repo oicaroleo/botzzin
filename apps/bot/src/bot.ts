@@ -52,10 +52,13 @@ async function initializeDefaultBot() {
 }
 
 // Chamar inicialização
-initializeDefaultBot();
+const mode = process.env.BOT_MODE || 'server';
+if (mode === 'server') {
+  initializeDefaultBot();
+}
 
-// Inicializar bot
-export const bot = new Bot(config.telegram.botToken!, {
+// Inicializar bot (apenas para server mode)
+export const bot = mode === 'server' ? new Bot(config.telegram.botToken!, {
   botInfo: {
     id: 0,
     is_bot: true,
@@ -68,11 +71,13 @@ export const bot = new Bot(config.telegram.botToken!, {
     can_manage_bots: false,
     has_main_web_app: false,
   } as any,
-});
+}) : null;
 
 // Store temporário para rastrear leads durante a sessão
 const sessionStore = new Map<number, { leadId: string; botId: string; selectedPlan?: any }>();
 
+// Only register handlers if bot is initialized (server mode)
+if (bot) {
 /**
  * Comando /start - Mostrar boas-vindas e planos disponíveis
  */
@@ -390,5 +395,6 @@ bot.callbackQuery('cancel', async (ctx) => {
 bot.catch((err) => {
   console.error('[BOT ERROR]', err);
 });
+} // End of bot handlers
 
 export default bot;
