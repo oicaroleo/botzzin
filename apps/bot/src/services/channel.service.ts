@@ -24,7 +24,7 @@ export class ChannelService {
       const expirationDate = new Date();
       expirationDate.setDate(expirationDate.getDate() + daysValid);
 
-      const inviteLink = await bot.api.createChatInviteLink(targetChannelId, {
+      const inviteLink = await bot!.api.createChatInviteLink(targetChannelId, {
         expire_date: Math.floor(expirationDate.getTime() / 1000),
         member_limit: 1,
       });
@@ -61,7 +61,7 @@ ${inviteLink}
 
 Clique no link para entrar agora!`;
 
-      await bot.api.sendMessage(userId, message, {
+      await bot!.api.sendMessage(userId, message, {
         parse_mode: 'Markdown',
       });
 

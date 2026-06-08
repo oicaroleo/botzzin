@@ -122,7 +122,7 @@ export async function createServer() {
 
   // Validação de saúde do servidor
   fastify.get('/info', async () => {
-    const me = await bot.api.getMe();
+    const me = await bot!.api.getMe();
     return {
       botUsername: me.username,
       botId: me.id,
