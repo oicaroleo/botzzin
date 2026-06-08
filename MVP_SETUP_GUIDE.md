@@ -23,7 +23,7 @@ Para o bot responder no Telegram, você precisa registrar o webhook:
 
 ```bash
 # Substitua SEU_BOT_TOKEN pelo token do seu bot
-curl -X POST "https://botzzin-production.up.railway.app/admin/setup-webhook?token=SEU_BOT_TOKEN"
+curl -X POST "https://botzzin-production.up.railway.app/api/webhooks/setup?token=SEU_BOT_TOKEN"
 ```
 
 **Resposta esperada:**
@@ -35,10 +35,15 @@ curl -X POST "https://botzzin-production.up.railway.app/admin/setup-webhook?toke
 }
 ```
 
+**Exemplo com token real:**
+```bash
+curl -X POST "https://botzzin-production.up.railway.app/api/webhooks/setup?token=8985129811:AAG1ty9bTfzlmUSpNX_mQdl5hDu7s_j1LvU"
+```
+
 ### Opção 3: Via Postman
 
 1. Método: **POST**
-2. URL: `https://botzzin-production.up.railway.app/admin/setup-webhook?token=SEU_BOT_TOKEN`
+2. URL: `https://botzzin-production.up.railway.app/api/webhooks/setup?token=SEU_BOT_TOKEN`
 3. Headers: `Content-Type: application/json`
 4. Body: deixe vazio (apenas {})
 5. Clique **Send**
