@@ -89,84 +89,34 @@ export async function createServer() {
   });
 
   // Webhook específico por bot (multi-tenant)
-  // Cada bot usa: POST /webhook/{botId}
+  // Publica mensagens na fila Redis para o bot worker processar
   fastify.post<{ Params: { botId: string } }>('/webhook/:botId', async (request, reply) => {
     const { botId } = request.params;
     const update = request.body as any;
 
     try {
-      console.log('[WEBHOOK] ========================================');
       console.log('[WEBHOOK] Received update for bot:', botId);
-      console.log('[WEBHOOK] Update type:', update.message ? 'message' : update.callback_query ? 'callback' : 'unknown');
 
-      // Buscar configuração do bot
-      const botConfig = await prisma.bot.findUnique({
+      // Verificar se bot existe
+      const botExists = await prisma.bot.findUnique({
         where: { id: botId },
-        include: {
-          plans: {
-            include: { plan: true },
-            orderBy: { plan: { priority: 'asc' } },
-          },
-        },
+        select: { id: true },
       });
 
-      if (!botConfig) {
+      if (!botExists) {
         console.error('[WEBHOOK] Bot not found:', botId);
         return reply.code(404).send({ error: 'Bot not found' });
       }
 
-      console.log('[WEBHOOK] Bot found:', botConfig.telegramBotId, botConfig.telegramUsername);
+      // Publicar na fila Redis
+      const { publishBotMessage } = await import('./redis.js');
+      await publishBotMessage(botId, update);
 
-      // Processar manualmente sem usar factory (evita problemas de closures)
-      const telegramUserId = String(update.message?.from?.id || update.callback_query?.from?.id);
-
-      if (update.message?.text === '/start') {
-        console.log('[WEBHOOK] Processing /start command for bot:', botId);
-
-        const firstName = update.message.from?.first_name || 'Amigo';
-
-        // Registrar lead
-        const lead = await leadService.registerOrUpdateLead(botId, telegramUserId, {
-          username: update.message.from?.username,
-          firstName: update.message.from?.first_name,
-        });
-
-        // Montar mensagem de boas-vindas
-        const welcomeMessage = botConfig.welcomeMessage ||
-          `👋 Bem-vindo, ${firstName}!\n\n` +
-          'Aqui você pode:\n' +
-          '✅ Gerar PIX para pagamento\n' +
-          '✅ Acessar conteúdo exclusivo\n' +
-          '✅ Receber suporte 24/7\n\n' +
-          'Escolha um plano abaixo para começar!';
-
-        // Preparar teclado
-        const plans = (botConfig.plans || []).map((bp: any) => ({
-          id: bp.plan.id,
-          name: bp.plan.name,
-          emoji: bp.plan.emoji,
-          price: bp.plan.price,
-        }));
-
-        if (plans.length > 0) {
-          console.log('[WEBHOOK] Sending welcome with plans for bot:', botId);
-          // TODO: Enviar via Telegram API em vez de usar bot instance
-          await fetch(`https://api.telegram.org/bot${botConfig.telegramBotToken}/sendMessage`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              chat_id: update.message.chat.id,
-              text: welcomeMessage,
-            }),
-          });
-        }
-
-        console.log('[WEBHOOK] /start processed for bot:', botId);
-      }
-
+      console.log('[WEBHOOK] Message queued for bot:', botId);
     } catch (err) {
       console.error('[WEBHOOK ERROR]', err);
     }
+
     reply.send({ ok: true });
   });
 

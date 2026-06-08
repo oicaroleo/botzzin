@@ -1,4 +1,6 @@
 import { startServer } from './server.js';
+import { startBotWorker } from './bot-worker.js';
+import { initRedis } from './redis.js';
 import { prisma } from './db.js';
 
 async function initializeDatabase() {
@@ -23,13 +25,34 @@ async function initializeDatabase() {
 
 async function main() {
   try {
-    // Inicializar database primeiro
+    // Determinar modo de execução
+    const mode = process.env.BOT_MODE || 'server';
+    const botId = process.env.BOT_ID;
+
+    console.log(`[INIT] Starting in mode: ${mode}`);
+
+    // Inicializar database
     await initializeDatabase();
 
-    // Depois iniciar servidor
-    await startServer();
+    // Inicializar Redis
+    await initRedis();
+
+    if (mode === 'server') {
+      console.log('[INIT] Starting webhook server...');
+      await startServer();
+    } else if (mode === 'worker') {
+      if (!botId) {
+        console.error('[INIT] BOT_ID environment variable is required for worker mode');
+        process.exit(1);
+      }
+      console.log(`[INIT] Starting bot worker for: ${botId}`);
+      await startBotWorker(botId);
+    } else {
+      console.error(`[INIT] Unknown mode: ${mode}`);
+      process.exit(1);
+    }
   } catch (err: any) {
-    console.error('Failed to start server:', err);
+    console.error('Failed to start:', err);
     process.exit(1);
   }
 }

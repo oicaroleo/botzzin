@@ -12,7 +12,8 @@
       "Bash(git push *)",
       "Bash(curl -s -X POST https://botzzin-production.up.railway.app/api/auth/signup -H 'Content-Type: application/json' -d '{\"name\":\"MVP User\",\"email\":\"mvp@botzzin.com\",\"password\":\"MvpTest123!@\"}')",
       "Bash(curl -s -X POST https://botzzin-production.up.railway.app/api/bots -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJjbXE0YnFwa3YwMDAwb3Y4dWc1aWt5aXphIiwiZW1haWwiOiJmcmllbmQxQGV4YW1wbGUuY29tIiwiaWF0IjoxNzgwODY5NTM3LCJleHAiOjE3ODE0NzQzMzd9.eHUTsB_byjZblmNyfM2wMaVu9Zitl5gfSENsz1vdEJc' -H 'Content-Type: application/json' -d '{\"telegramBotToken\":\"1234567890:ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghi\"}')",
-      "Bash(curl -s -X POST \"https://api.telegram.org/bot8985129811:AAG1ty9bTfzlmUSpNX_mQdl5hDu7s_j1LvU/deleteWebhook\")"
+      "Bash(curl -s -X POST \"https://api.telegram.org/bot8985129811:AAG1ty9bTfzlmUSpNX_mQdl5hDu7s_j1LvU/deleteWebhook\")",
+      "Bash(curl -s https://botzzin-production.up.railway.app/health)"
     ]
   }
 }
