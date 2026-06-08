@@ -19,10 +19,21 @@ export async function setupWebhooksRoutes(fastify: FastifyInstance) {
         return reply.code(400).send({ error: 'Bot ID é obrigatório (parâmetro ?botId=...)' });
       }
 
-      // Usar webhook específico por bot: /webhook/{botId}
-      const webhookUrl = `${config.telegram.webhookUrl}/webhook/${botId}`;
+      // Buscar bot no banco para pegar Telegram Bot ID
+      const bot = await prisma.bot.findUnique({
+        where: { id: botId },
+        select: { id: true, telegramBotId: true },
+      });
+
+      if (!bot) {
+        return reply.code(404).send({ error: 'Bot não encontrado' });
+      }
+
+      // Usar webhook com Telegram Bot ID (numérico): /webhook/{telegramBotId}
+      const webhookUrl = `${config.telegram.webhookUrl}/webhook/${bot.telegramBotId}`;
 
       console.log('[SETUP WEBHOOK] Setting webhook for bot:', botId);
+      console.log('[SETUP WEBHOOK] Telegram Bot ID:', bot.telegramBotId);
       console.log('[SETUP WEBHOOK] Webhook URL:', webhookUrl);
       console.log('[SETUP WEBHOOK] Token:', token.substring(0, 20) + '...');
 
@@ -67,10 +78,21 @@ export async function setupWebhooksRoutes(fastify: FastifyInstance) {
         return reply.code(400).send({ error: 'Bot ID é obrigatório (parâmetro ?botId=...)' });
       }
 
-      // Usar webhook específico por bot: /webhook/{botId}
-      const webhookUrl = `${config.telegram.webhookUrl}/webhook/${botId}`;
+      // Buscar bot no banco para pegar Telegram Bot ID
+      const bot = await prisma.bot.findUnique({
+        where: { id: botId },
+        select: { id: true, telegramBotId: true },
+      });
+
+      if (!bot) {
+        return reply.code(404).send({ error: 'Bot não encontrado' });
+      }
+
+      // Usar webhook com Telegram Bot ID (numérico): /webhook/{telegramBotId}
+      const webhookUrl = `${config.telegram.webhookUrl}/webhook/${bot.telegramBotId}`;
 
       console.log('[SETUP WEBHOOK] Setting webhook for bot:', botId);
+      console.log('[SETUP WEBHOOK] Telegram Bot ID:', bot.telegramBotId);
       console.log('[SETUP WEBHOOK] Webhook URL:', webhookUrl);
       console.log('[SETUP WEBHOOK] Token:', token.substring(0, 20) + '...');
 
