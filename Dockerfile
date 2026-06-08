@@ -17,7 +17,7 @@ COPY apps/dashboard ./apps/dashboard
 COPY apps/proxy ./apps/proxy
 
 # Install dependencies
-RUN pnpm install --frozen-lockfile
+RUN pnpm install
 
 # Build bot and dashboard apps (proxy doesn't need building)
 RUN pnpm --filter @botzzin/bot build && pnpm --filter dashboard build
