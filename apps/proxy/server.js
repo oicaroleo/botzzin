@@ -19,8 +19,18 @@ const server = http.createServer((req, res) => {
   console.log(`${req.method} ${req.url}`);
 
   // Route API and webhook requests to Fastify backend
-  if (req.url.startsWith('/api/') || req.url.startsWith('/webhook') || req.url.startsWith('/admin/') || req.url === '/health') {
-    console.log('→ Routing to backend (3001)');
+  const isBackendRoute =
+    req.url.startsWith('/api/') ||
+    req.url === '/api' ||
+    req.url.startsWith('/webhook') ||
+    req.url === '/webhook' ||
+    req.url.startsWith('/admin/') ||
+    req.url === '/admin' ||
+    req.url === '/health' ||
+    req.url.startsWith('/health');
+
+  if (isBackendRoute) {
+    console.log('→ Routing to backend (3001) - URL:', req.url);
     apiProxy.web(req, res, (err) => {
       console.error('Backend proxy error:', err);
       res.writeHead(503, { 'Content-Type': 'application/json' });
@@ -28,7 +38,7 @@ const server = http.createServer((req, res) => {
     });
   } else {
     // Route everything else to Next.js dashboard
-    console.log('→ Routing to dashboard (3000)');
+    console.log('→ Routing to dashboard (3000) - URL:', req.url);
     dashboardProxy.web(req, res, (err) => {
       console.error('Dashboard proxy error:', err);
       res.writeHead(503, { 'Content-Type': 'text/html' });
