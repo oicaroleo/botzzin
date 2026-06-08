@@ -9,6 +9,7 @@ import { setupBotConfigRoutes } from './routes/bot-config.routes.js';
 import { setupPlansRoutes } from './routes/plans.routes.js';
 import { setupMetricsRoutes } from './routes/metrics.routes.js';
 import { setupWebhooksRoutes } from './routes/webhooks.routes.js';
+import { setupAdminRoutes } from './routes/admin.routes.js';
 import { getBotInstance } from './bot-factory.js';
 
 export async function createServer() {
@@ -37,6 +38,9 @@ export async function createServer() {
 
   // Registrar rotas de autenticação
   await setupAuthRoutes(fastify);
+
+  // Registrar rotas de admin
+  await setupAdminRoutes(fastify);
 
   // Registrar rotas de bots
   await setupBotsRoutes(fastify);
