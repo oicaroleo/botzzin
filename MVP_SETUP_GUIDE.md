@@ -11,10 +11,19 @@
 
 Para o bot responder no Telegram, você precisa registrar o webhook:
 
-### Opção 1: Via curl (Recomendado)
+### Opção 1: Via Dashboard (Recomendado) ⭐ NOVO
+
+1. Acesse https://botzzin-production.up.railway.app
+2. Faça login com sua conta
+3. Clique no bot que deseja ativar
+4. Na aba **⚙️ Configuração**, clique no botão **🚀 Ativar Webhook**
+5. Aguarde a confirmação de sucesso
+
+### Opção 2: Via curl
 
 ```bash
-curl -X POST https://botzzin-production.up.railway.app/admin/setup-webhook
+# Substitua SEU_BOT_TOKEN pelo token do seu bot
+curl -X POST "https://botzzin-production.up.railway.app/admin/setup-webhook?token=SEU_BOT_TOKEN"
 ```
 
 **Resposta esperada:**
@@ -26,12 +35,13 @@ curl -X POST https://botzzin-production.up.railway.app/admin/setup-webhook
 }
 ```
 
-### Opção 2: Via Postman
+### Opção 3: Via Postman
 
 1. Método: **POST**
-2. URL: `https://botzzin-production.up.railway.app/admin/setup-webhook`
+2. URL: `https://botzzin-production.up.railway.app/admin/setup-webhook?token=SEU_BOT_TOKEN`
 3. Headers: `Content-Type: application/json`
-4. Clique **Send**
+4. Body: deixe vazio (apenas {})
+5. Clique **Send**
 
 ---
 
@@ -106,4 +116,27 @@ Se o webhook retornar erro:
 
 ---
 
-**Status**: MVP pronto para produção com setup de webhook manual (será automatizado em breve)
+---
+
+## 🎯 Arquitetura Técnica
+
+### Multi-Tenant SaaS
+- **Cada cliente** tem seu próprio bot com token único
+- **Cada bot** tem configuração independente (mensagens, canais, planos)
+- **Cada bot** é rastreado com métricas separadas
+
+### Stack Técnico
+- **Backend**: Fastify 4.28.0 + Telegram Bot API (grammY)
+- **Frontend**: Next.js 16.2.7 com App Router
+- **Database**: PostgreSQL com Prisma ORM
+- **Proxy**: Node.js HTTP proxy para unified entry point
+- **Deploy**: Railway com Docker multi-service
+
+### Fluxo de Requisições
+```
+[Client] → Railway:8080 (proxy) 
+  ├→ /api/*, /webhook, /admin/* → Fastify Backend (3001)
+  └→ /* (outras) → Next.js Dashboard (3000)
+```
+
+**Status**: MVP pronto para produção ✅

@@ -68,8 +68,8 @@ export async function createServer() {
     reply.send({ ok: true });
   });
 
-  // Endpoint para registrar webhook no Telegram (admin)
-  fastify.post<{ Querystring: { botId?: string; token?: string } }>('/admin/setup-webhook', async (request, reply) => {
+  // Webhook setup handler (extracted for reuse)
+  const setupWebhookHandler = async (request: any, reply: any) => {
     try {
       const { botId, token } = request.query;
 
@@ -110,7 +110,13 @@ export async function createServer() {
       console.error('[SETUP WEBHOOK ERROR]', err);
       reply.code(500).send({ error: String(err) });
     }
-  });
+  };
+
+  // Rota principal: /api/webhooks/setup (funciona corretamente com proxy)
+  fastify.post<{ Querystring: { botId?: string; token?: string } }>('/api/webhooks/setup', setupWebhookHandler);
+
+  // Rota alternativa: /admin/setup-webhook (para compatibilidade)
+  fastify.post<{ Querystring: { botId?: string; token?: string } }>('/admin/setup-webhook', setupWebhookHandler);
 
   // Validação de saúde do servidor
   fastify.get('/info', async () => {

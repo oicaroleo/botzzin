@@ -70,6 +70,6 @@ export const webhookAPI = {
     const params = new URLSearchParams();
     params.append('token', botToken);
     if (botId) params.append('botId', botId);
-    return api.post(`/admin/setup-webhook?${params.toString()}`, {});
+    return api.post(`/api/webhooks/setup?${params.toString()}`, {});
   },
 };
