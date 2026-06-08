@@ -35,9 +35,9 @@ export async function startWorkerManager() {
     }
 
     // Iniciar um worker para cada bot
-    const workerPromises = bots.map((bot) => {
+    const workerPromises = bots.map((bot: any) => {
       console.log(`[WORKER MANAGER] Starting worker for bot: ${bot.telegramUsername} (${bot.id})`);
-      return startBotWorker(bot.id).catch((error) => {
+      return startBotWorker(bot.id).catch((error: any) => {
         console.error(`[WORKER MANAGER] Error starting worker for bot ${bot.id}:`, error);
       });
     });

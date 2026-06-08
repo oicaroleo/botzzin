@@ -1,14 +1,14 @@
-import { createClient, RedisClientType } from 'redis';
+import { createClient } from 'redis';
 
-let redisClient: RedisClientType | null = null;
+let redisClient: any = null;
 
-export async function initRedis(): Promise<RedisClientType> {
+export async function initRedis(): Promise<any> {
   const redisUrl = process.env.REDIS_URL || 'redis://127.0.0.1:6379';
 
   const client = createClient({
     url: redisUrl,
     socket: {
-      reconnectStrategy: (retries) => {
+      reconnectStrategy: (retries: number) => {
         if (retries > 10) {
           console.error('[REDIS] Max retries reached');
           return new Error('Redis retry limit exceeded');
@@ -18,7 +18,7 @@ export async function initRedis(): Promise<RedisClientType> {
     },
   });
 
-  client.on('error', (err) => console.error('[REDIS ERROR]', err));
+  client.on('error', (err: any) => console.error('[REDIS ERROR]', err));
   client.on('connect', () => console.log('[REDIS] Connected'));
   client.on('disconnect', () => console.log('[REDIS] Disconnected'));
 
@@ -28,7 +28,7 @@ export async function initRedis(): Promise<RedisClientType> {
   return client;
 }
 
-export function getRedis(): RedisClientType {
+export function getRedis(): any {
   if (!redisClient) {
     throw new Error('Redis not initialized. Call initRedis() first');
   }

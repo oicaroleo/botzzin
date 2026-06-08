@@ -1,7 +1,6 @@
 import { prisma } from './db.js';
 import { consumeBotMessage, initRedis } from './redis.js';
 import { leadService } from './services/lead.service.js';
-import fetch from 'node-fetch';
 
 /**
  * Bot Worker - Consome mensagens de uma fila Redis e processa com a instância do bot

@@ -98,6 +98,37 @@ export class PaymentService {
       },
     });
   }
+
+  /**
+   * Gerar PIX (cria um pagamento pendente)
+   */
+  async generatePIX(leadId: string, planId: string, amount: number, botId: string) {
+    try {
+      // Gerar QR code e copiar-colar
+      const qrCode = `https://qrcode.example.com/${Math.random().toString(36).substring(7)}`;
+      const copyPaste = `00020126580014br.gov.bcb.pix0136${Math.random().toString(36).substring(7)}520400005303986540510.995802BR5913BotZZIN6009Sao Paulo62370503***63041D3D`;
+
+      const payment = await this.createPayment(
+        botId,
+        leadId,
+        amount,
+        'pix',
+        qrCode,
+        copyPaste,
+        new Date(Date.now() + 30 * 60 * 1000) // Expira em 30 min
+      );
+
+      return {
+        id: payment.id,
+        qr_code: copyPaste, // Use snake_case para compatibilidade
+        amount: amount,
+        expiresAt: payment.expiresAt,
+      };
+    } catch (error) {
+      console.error('[PAYMENT] Error generating PIX:', error);
+      return null;
+    }
+  }
 }
 
 export const paymentService = new PaymentService();
