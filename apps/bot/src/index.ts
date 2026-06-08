@@ -31,7 +31,7 @@ async function main() {
     const mode = process.env.BOT_MODE || 'server';
     const botId = process.env.BOT_ID;
 
-    console.log(`[INIT] Starting in mode: ${mode}`);
+    console.log(`[INIT] 🚀 BotZZIN Starting in mode: ${mode}`);
 
     // Apenas sincronizar database em modo server
     if (mode === 'server') {
