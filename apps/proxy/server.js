@@ -16,21 +16,22 @@ const dashboardProxy = httpProxy.createProxyServer({
 
 // Create main server
 const server = http.createServer((req, res) => {
-  console.log(`${req.method} ${req.url}`);
+  console.log(`\n[PROXY] ${req.method} ${req.url}`);
+  console.log(`[PROXY] pathname: ${req.url.split('?')[0]}`);
+  console.log(`[PROXY] query: ${req.url.includes('?') ? req.url.split('?')[1] : 'none'}`);
 
   // Route API and webhook requests to Fastify backend
+  // Extract path without query string for routing decision
+  const path = req.url.split('?')[0];
+
   const isBackendRoute =
-    req.url.startsWith('/api/') ||
-    req.url === '/api' ||
-    req.url.startsWith('/webhook') ||
-    req.url === '/webhook' ||
-    req.url.startsWith('/admin/') ||
-    req.url === '/admin' ||
-    req.url === '/health' ||
-    req.url.startsWith('/health');
+    path.startsWith('/api') ||
+    path.startsWith('/webhook') ||
+    path.startsWith('/admin') ||
+    path === '/health';
 
   if (isBackendRoute) {
-    console.log('→ Routing to backend (3001) - URL:', req.url);
+    console.log(`→ Routing to backend (3001) - path: ${path}`);
     apiProxy.web(req, res, (err) => {
       console.error('Backend proxy error:', err);
       res.writeHead(503, { 'Content-Type': 'application/json' });
@@ -38,7 +39,7 @@ const server = http.createServer((req, res) => {
     });
   } else {
     // Route everything else to Next.js dashboard
-    console.log('→ Routing to dashboard (3000) - URL:', req.url);
+    console.log(`→ Routing to dashboard (3000) - path: ${path}`);
     dashboardProxy.web(req, res, (err) => {
       console.error('Dashboard proxy error:', err);
       res.writeHead(503, { 'Content-Type': 'text/html' });
