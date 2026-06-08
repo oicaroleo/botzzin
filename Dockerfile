@@ -47,81 +47,96 @@ npx prisma db push --skip-generate --accept-data-loss || {
   echo "WARNING: Database sync failed, continuing anyway..."
 }
 
+# Determine mode of operation
+BOT_MODE=${BOT_MODE:-server}
 echo ""
-echo "=== Starting Fastify backend on port 3001 ==="
-cd /app/apps/bot
-PORT=3001 node dist/index.js > /tmp/bot.log 2>&1 &
-BOT_PID=$!
-echo "Bot started with PID $BOT_PID"
+echo "=== Starting in mode: $BOT_MODE ==="
 
-echo ""
-echo "=== Waiting for backend to be ready (max 30 seconds) ==="
-MAX_RETRIES=15
-RETRY=0
-while [ $RETRY -lt $MAX_RETRIES ]; do
-  if curl -f -s http://127.0.0.1:3001/health > /dev/null 2>&1; then
-    echo "✓ Backend is ready!"
-    break
+if [ "$BOT_MODE" = "server" ]; then
+  echo ""
+  echo "=== Starting Fastify webhook server on port 3001 ==="
+  cd /app/apps/bot
+  PORT=3001 node dist/index.js &
+  BOT_PID=$!
+  echo "Webhook server started with PID $BOT_PID"
+
+  echo ""
+  echo "=== Waiting for backend to be ready (max 30 seconds) ==="
+  MAX_RETRIES=15
+  RETRY=0
+  while [ $RETRY -lt $MAX_RETRIES ]; do
+    if curl -f -s http://127.0.0.1:3001/health > /dev/null 2>&1; then
+      echo "✓ Backend is ready!"
+      break
+    fi
+    RETRY=$((RETRY + 1))
+    echo "  Attempt $RETRY/$MAX_RETRIES..."
+    sleep 2
+  done
+
+  echo ""
+  echo "=== Starting Next.js dashboard on port 3000 ==="
+  cd /app/apps/dashboard
+  PORT=3000 npm run start > /tmp/dashboard.log 2>&1 &
+  DASHBOARD_PID=$!
+  echo "Dashboard started with PID $DASHBOARD_PID"
+
+  echo ""
+  echo "=== Waiting for dashboard to be ready (max 30 seconds) ==="
+  RETRY=0
+  while [ $RETRY -lt 15 ]; do
+    if curl -s http://127.0.0.1:3000 > /dev/null 2>&1; then
+      echo "✓ Dashboard is ready!"
+      break
+    fi
+    RETRY=$((RETRY + 1))
+    echo "  Attempt $RETRY/15..."
+    sleep 2
+  done
+
+  echo ""
+  echo "=== Starting HTTP reverse proxy on port 8080 ==="
+  cd /app/apps/proxy
+  PORT=8080 npm run start > /tmp/proxy.log 2>&1 &
+  PROXY_PID=$!
+  echo "Proxy started with PID $PROXY_PID"
+
+  echo ""
+  echo "=== Waiting for proxy to be ready (max 10 seconds) ==="
+  RETRY=0
+  while [ $RETRY -lt 5 ]; do
+    if curl -f -s http://127.0.0.1:8080/health > /dev/null 2>&1; then
+      echo "✓ Proxy is ready!"
+      break
+    fi
+    RETRY=$((RETRY + 1))
+    echo "  Attempt $RETRY/5..."
+    sleep 2
+  done
+
+  echo ""
+  echo "✓ All services started!"
+  echo "Service endpoints:"
+  echo "  Backend API:  http://127.0.0.1:3001"
+  echo "  Dashboard:    http://127.0.0.1:3000"
+  echo "  Public proxy: http://127.0.0.1:8080"
+
+elif [ "$BOT_MODE" = "worker" ]; then
+  if [ -z "$BOT_ID" ]; then
+    echo "ERROR: BOT_ID environment variable is required for worker mode"
+    exit 1
   fi
-  RETRY=$((RETRY + 1))
-  echo "  Attempt $RETRY/$MAX_RETRIES..."
-  sleep 2
-done
 
-echo ""
-echo "=== Starting Next.js dashboard on port 3000 ==="
-cd /app/apps/dashboard
-PORT=3000 npm run start > /tmp/dashboard.log 2>&1 &
-DASHBOARD_PID=$!
-echo "Dashboard started with PID $DASHBOARD_PID"
+  echo ""
+  echo "=== Starting bot worker for BOT_ID: $BOT_ID ==="
+  cd /app/apps/bot
+  PORT=3001 node dist/index.js
 
-echo ""
-echo "=== Waiting for dashboard to be ready (max 30 seconds) ==="
-RETRY=0
-while [ $RETRY -lt $MAX_RETRIES ]; do
-  if curl -s http://127.0.0.1:3000 > /dev/null 2>&1; then
-    echo "✓ Dashboard is ready!"
-    break
-  fi
-  RETRY=$((RETRY + 1))
-  echo "  Attempt $RETRY/$MAX_RETRIES..."
-  sleep 2
-done
-
-echo ""
-echo "=== Starting HTTP reverse proxy on port 8080 ==="
-cd /app/apps/proxy
-PORT=8080 npm run start > /tmp/proxy.log 2>&1 &
-PROXY_PID=$!
-echo "Proxy started with PID $PROXY_PID"
-
-echo ""
-echo "=== Waiting for proxy to be ready (max 10 seconds) ==="
-RETRY=0
-while [ $RETRY -lt 5 ]; do
-  if curl -f -s http://127.0.0.1:8080/health > /dev/null 2>&1; then
-    echo "✓ Proxy is ready!"
-    break
-  fi
-  RETRY=$((RETRY + 1))
-  echo "  Attempt $RETRY/5..."
-  sleep 2
-done
-
-echo ""
-echo "✓ All services started!"
-echo ""
-echo "Service endpoints:"
-echo "  Backend API:  http://127.0.0.1:3001"
-echo "  Dashboard:    http://127.0.0.1:3000"
-echo "  Public proxy: http://127.0.0.1:8080"
-echo ""
-echo "Live logs:"
-echo "  tail -f /tmp/bot.log"
-echo "  tail -f /tmp/dashboard.log"
-echo "  tail -f /tmp/proxy.log"
-echo ""
-echo "=== All systems operational ==="
+else
+  echo "ERROR: Unknown BOT_MODE: $BOT_MODE"
+  echo "Valid modes: server, worker"
+  exit 1
+fi
 
 # Wait for all background jobs to keep the container alive
 wait
