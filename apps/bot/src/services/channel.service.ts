@@ -1,77 +1,107 @@
-import { bot } from '../bot.js';
+const TG = 'https://api.telegram.org';
 
-// MVP: Configuração fixa para teste
-// Depois será configurável no site
-const CHANNEL_CONFIG = {
-  id: -3966757980, // ID do canal privado de teste
-  name: 'Canal Exclusivo BotZZIN',
-};
-
-export class ChannelService {
-  /**
-   * Gerar link de convite para o canal com expiração
-   */
-  async generateInviteLink(
-    daysValid: number = 30,
-    channelId?: string | number
-  ): Promise<string> {
-    try {
-      // Usar channelId passado ou fallback para configuração
-      const targetChannelId = channelId || CHANNEL_CONFIG.id;
-
-      console.log('[CHANNEL] Gerando link de convite para', daysValid, 'dias, Canal:', targetChannelId);
-
-      const expirationDate = new Date();
-      expirationDate.setDate(expirationDate.getDate() + daysValid);
-
-      const inviteLink = await bot!.api.createChatInviteLink(targetChannelId, {
-        expire_date: Math.floor(expirationDate.getTime() / 1000),
-        member_limit: 1,
-      });
-
-      console.log('[CHANNEL] Link criado:', inviteLink.invite_link);
-      return inviteLink.invite_link;
-    } catch (error) {
-      console.error('[CHANNEL ERROR]', error);
-      throw new Error(`Erro ao gerar link: ${error}`);
-    }
-  }
-
-  /**
-   * Enviar link de convite para o user
-   */
-  async sendInviteLinkToUser(
-    telegramUserId: string,
-    inviteLink: string,
-    daysValid: number
-  ): Promise<boolean> {
-    try {
-      const userId = parseInt(telegramUserId);
-      const expiresDate = new Date(Date.now() + daysValid * 24 * 60 * 60 * 1000);
-
-      const message = `✅ *Acesso Liberado!*
-
-Bem-vindo ao ${CHANNEL_CONFIG.name}! 🎉
-
-*Seu link de acesso:*
-${inviteLink}
-
-*Válido por:* ${daysValid} dias
-*Expira em:* ${expiresDate.toLocaleDateString('pt-BR')}
-
-Clique no link para entrar agora!`;
-
-      await bot!.api.sendMessage(userId, message, {
-        parse_mode: 'Markdown',
-      });
-
-      console.log('[CHANNEL] Link enviado para user:', userId);
-      return true;
-    } catch (error) {
-      console.error('[CHANNEL SEND ERROR]', error);
-      return false;
-    }
-  }
+async function callTelegram(token: string, method: string, body: Record<string, unknown>) {
+  const res = await fetch(`${TG}/bot${token}/${method}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  const json = await res.json() as { ok: boolean; result?: unknown; description?: string };
+  if (!json.ok) throw new Error(`Telegram ${method} failed: ${json.description}`);
+  return json.result;
 }
 
-export const channelService = new ChannelService();
+export async function generateInviteLink(
+  botToken: string,
+  channelId: string,
+  daysValid: number
+): Promise<string> {
+  const expireDate = Math.floor(Date.now() / 1000) + daysValid * 86400;
+
+  const result = await callTelegram(botToken, 'createChatInviteLink', {
+    chat_id: channelId,
+    expire_date: expireDate,
+    member_limit: 1,
+  }) as { invite_link: string };
+
+  return result.invite_link;
+}
+
+export async function sendMessage(
+  botToken: string,
+  chatId: string | number,
+  text: string,
+  extra: Record<string, unknown> = {}
+) {
+  return callTelegram(botToken, 'sendMessage', { chat_id: chatId, text, ...extra });
+}
+
+export async function answerCallbackQuery(botToken: string, callbackQueryId: string, text?: string) {
+  return callTelegram(botToken, 'answerCallbackQuery', {
+    callback_query_id: callbackQueryId,
+    ...(text ? { text } : {}),
+  });
+}
+
+export async function sendChatAction(botToken: string, chatId: string | number, action: string) {
+  return callTelegram(botToken, 'sendChatAction', { chat_id: chatId, action });
+}
+
+// ─── Upload de mídia para o canal de cache → retorna file_id reutilizável ─────
+// Envia o arquivo ao chat (canal/grupo onde o bot é admin) e extrai o file_id
+// da mensagem resultante. Esse file_id é depois reusado para reenviar a mídia
+// sem reupload (prévias de boas-vindas, upsell, downsell, order bump…).
+
+type CachedMedia = { fileId: string; type: 'photo' | 'video' | 'audio' | 'document' };
+
+export async function sendMediaToChat(
+  botToken: string,
+  chatId: string | number,
+  buffer: Buffer,
+  filename: string,
+  mimeType: string,
+): Promise<CachedMedia> {
+  const mt = (mimeType || '').toLowerCase();
+  let method: string, field: string, type: CachedMedia['type'];
+  if (mt.startsWith('image/'))      { method = 'sendPhoto';    field = 'photo';    type = 'photo'; }
+  else if (mt.startsWith('video/')) { method = 'sendVideo';    field = 'video';    type = 'video'; }
+  else if (mt.startsWith('audio/')) { method = 'sendAudio';    field = 'audio';    type = 'audio'; }
+  else                              { method = 'sendDocument'; field = 'document'; type = 'document'; }
+
+  const form = new FormData();
+  form.append('chat_id', String(chatId));
+  form.append('disable_notification', 'true');
+  form.append(field, new Blob([new Uint8Array(buffer)], { type: mt || 'application/octet-stream' }), filename || 'media');
+
+  const res = await fetch(`${TG}/bot${botToken}/${method}`, { method: 'POST', body: form });
+  const json = await res.json() as { ok: boolean; result?: any; description?: string };
+  if (!json.ok) throw new Error(`Telegram ${method} falhou: ${json.description}`);
+
+  const r = json.result;
+  let fileId: string | undefined;
+  if (type === 'photo') fileId = r.photo?.[r.photo.length - 1]?.file_id; // maior resolução
+  else                  fileId = r[field]?.file_id;
+  if (!fileId) throw new Error('Telegram não retornou file_id');
+
+  return { fileId, type };
+}
+
+// Reenvia uma mídia já cacheada (por file_id) — sem reupload.
+export async function sendCachedMedia(
+  botToken: string,
+  chatId: string | number,
+  media: { fileId: string; type: string },
+  caption?: string,
+) {
+  const map: Record<string, [string, string]> = {
+    photo:    ['sendPhoto', 'photo'],
+    video:    ['sendVideo', 'video'],
+    audio:    ['sendAudio', 'audio'],
+    document: ['sendDocument', 'document'],
+  };
+  const [method, field] = map[media.type] || map.document;
+  return callTelegram(botToken, method, {
+    chat_id: chatId, [field]: media.fileId,
+    ...(caption ? { caption, parse_mode: 'HTML' } : {}),
+  });
+}

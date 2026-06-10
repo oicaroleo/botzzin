@@ -1,53 +1,45 @@
 import { prisma } from './db.js';
-import { initRedis, getRedis } from './redis.js';
 import { startBotWorker } from './bot-worker.js';
 
-/**
- * Worker Manager - Gerencia múltiplos bot workers automaticamente
- * Lê todos os bots do banco e inicia um worker para cada um
- */
-export async function startWorkerManager() {
-  console.log('[WORKER MANAGER] Starting...');
+const activeWorkers = new Set<string>(); // botIds com worker rodando
 
-  try {
-    // Inicializar Redis
-    await initRedis();
-    console.log('[WORKER MANAGER] Redis initialized');
+async function spawnWorker(botId: string, username: string | null) {
+  if (activeWorkers.has(botId)) return;
+  activeWorkers.add(botId);
+  console.log(`[MANAGER] Starting worker for @${username ?? botId}`);
 
-    // Buscar todos os bots ativos
-    const bots = await prisma.bot.findMany({
-      where: {
-        // Pode adicionar filtros aqui se necessário
-        // ex: { status: 'active' }
-      },
-      select: {
-        id: true,
-        telegramUsername: true,
-        telegramBotId: true,
-      },
+  startBotWorker(botId)
+    .catch((err) => {
+      console.error(`[MANAGER] Worker ${botId} crashed:`, err);
+    })
+    .finally(() => {
+      activeWorkers.delete(botId);
+      console.log(`[MANAGER] Worker ${botId} stopped — will retry in next cycle`);
     });
+}
 
-    console.log(`[WORKER MANAGER] Found ${bots.length} active bots`);
+export async function startWorkerManager() {
+  console.log('[MANAGER] Worker manager started — polling every 15s for active bots');
 
-    if (bots.length === 0) {
-      console.warn('[WORKER MANAGER] No bots found in database');
-      return;
+  // Loop: a cada 15s verifica bots ativos e spawna workers para os novos
+  while (true) {
+    try {
+      const bots = await prisma.bot.findMany({
+        where: { status: 'active' },
+        select: { id: true, telegramUsername: true },
+      });
+
+      for (const bot of bots) {
+        spawnWorker(bot.id, bot.telegramUsername);
+      }
+
+      if (bots.length === 0) {
+        console.log('[MANAGER] No active bots yet, waiting...');
+      }
+    } catch (err) {
+      console.error('[MANAGER] Error polling bots:', err);
     }
 
-    // Iniciar um worker para cada bot
-    const workerPromises = bots.map((bot: any) => {
-      console.log(`[WORKER MANAGER] Starting worker for bot: ${bot.telegramUsername} (${bot.id})`);
-      return startBotWorker(bot.id).catch((error: any) => {
-        console.error(`[WORKER MANAGER] Error starting worker for bot ${bot.id}:`, error);
-      });
-    });
-
-    // Aguardar todos os workers (na verdade nunca resolvem pois rodacm em loop infinito)
-    await Promise.allSettled(workerPromises);
-
-    console.log('[WORKER MANAGER] All workers started');
-  } catch (error) {
-    console.error('[WORKER MANAGER] Fatal error:', error);
-    process.exit(1);
+    await new Promise((r) => setTimeout(r, 15_000));
   }
 }

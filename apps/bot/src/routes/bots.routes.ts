@@ -143,28 +143,4 @@ export async function setupBotsRoutes(fastify: FastifyInstance) {
     }
   );
 
-  /**
-   * GET /api/bots/:botId/webhook-status
-   * Obter status do webhook
-   */
-  fastify.get<{ Params: { botId: string } }>(
-    '/api/bots/:botId/webhook-status',
-    { onRequest: [requireAuth] },
-    async (request: FastifyRequest, reply: FastifyReply) => {
-      try {
-        const userId = (request as any).userId;
-        const { botId } = request.params as { botId: string };
-
-        const status = await botManagementService.getWebhookStatus(botId, userId);
-
-        return reply.send(status);
-      } catch (error: any) {
-        console.error('[BOT WEBHOOK STATUS ERROR]', error);
-
-        return reply.code(500).send({
-          error: error.message || 'Erro ao verificar webhook',
-        });
-      }
-    }
-  );
 }

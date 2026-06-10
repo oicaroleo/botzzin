@@ -3,198 +3,89 @@ import { prisma } from '../db.js';
 export interface DateRange {
   startDate?: Date;
   endDate?: Date;
-  days?: number; // Últimos N dias
+  days?: number;
 }
 
-export class MetricsService {
-  /**
-   * Calcular data range
-   */
-  private calculateDateRange(range: DateRange = {}): { startDate: Date; endDate: Date } {
-    const endDate = range.endDate || new Date();
-    const startDate = range.startDate || new Date(endDate.getTime() - (range.days || 30) * 24 * 60 * 60 * 1000);
+function calcRange(range: DateRange = {}) {
+  const end = range.endDate || new Date();
+  const start = range.startDate || new Date(end.getTime() - (range.days || 30) * 86400_000);
+  return { start, end };
+}
 
-    return { startDate, endDate };
-  }
+async function assertBotOwner(botId: string, userId: string) {
+  const bot = await prisma.bot.findFirst({ where: { id: botId, userId } });
+  if (!bot) throw new Error('Bot não encontrado');
+  return bot;
+}
 
-  /**
-   * Obter métricas do bot
-   */
-  async getBotMetrics(
-    botId: string,
-    userId: string,
-    range: DateRange = {}
-  ): Promise<any> {
-    // Validar se bot existe e pertence ao usuário
-    const bot = await prisma.bot.findFirst({
-      where: { id: botId, userId },
-    });
+export const metricsService = {
+  async getBotMetrics(botId: string, userId: string, range: DateRange = {}) {
+    await assertBotOwner(botId, userId);
+    const { start, end } = calcRange(range);
 
-    if (!bot) {
-      throw new Error('Bot não encontrado');
-    }
-
-    const { startDate, endDate } = this.calculateDateRange(range);
-
-    // Buscar dados
-    const [
-      totalLeads,
-      leadsNovosPeriodo,
-      pixGerados,
-      pixPagos,
-      totalReceita,
-      taxaConversao,
-      leadsPorStatus,
-    ] = await Promise.all([
-      // Total de leads
-      prisma.lead.count({
-        where: { botId },
-      }),
-
-      // Leads novos no período
-      prisma.lead.count({
-        where: {
-          botId,
-          createdAt: { gte: startDate, lte: endDate },
-        },
-      }),
-
-      // PIX gerados (status generated_pix ou paid)
-      prisma.payment.count({
-        where: {
-          lead: { botId },
-          createdAt: { gte: startDate, lte: endDate },
-        },
-      }),
-
-      // PIX pagos
-      prisma.payment.count({
-        where: {
-          lead: { botId },
-          status: 'confirmed',
-          confirmedAt: { gte: startDate, lte: endDate },
-        },
-      }),
-
-      // Total de receita
+    const [totalLeads, newLeads, pixGenerated, pixPaid, revenue, byStatus, startsAggregate] = await Promise.all([
+      prisma.lead.count({ where: { botId } }),
+      prisma.lead.count({ where: { botId, createdAt: { gte: start, lte: end } } }),
+      prisma.payment.count({ where: { lead: { botId }, createdAt: { gte: start, lte: end } } }),
+      prisma.payment.count({ where: { lead: { botId }, status: 'paid', paidAt: { gte: start, lte: end } } }),
       prisma.payment.aggregate({
-        where: {
-          lead: { botId },
-          status: 'confirmed',
-          confirmedAt: { gte: startDate, lte: endDate },
-        },
+        where: { lead: { botId }, status: 'paid', paidAt: { gte: start, lte: end } },
         _sum: { amount: true },
       }),
-
-      // Taxa de conversão
-      prisma.lead.groupBy({
-        by: ['status'],
-        where: {
-          botId,
-          createdAt: { gte: startDate, lte: endDate },
-        },
-        _count: true,
-      }),
-
-      // Leads por status
-      prisma.lead.groupBy({
-        by: ['status'],
-        where: { botId },
-        _count: true,
-      }),
+      prisma.lead.groupBy({ by: ['status'], where: { botId }, _count: true }),
+      prisma.lead.aggregate({ where: { botId }, _sum: { starts: true } }),
     ]);
 
-    // Calcular conversão
-    const conversionRate =
-      leadsNovosPeriodo > 0 ? ((pixPagos / leadsNovosPeriodo) * 100).toFixed(2) : '0';
+    const statusMap: Record<string, number> = {};
+    byStatus.forEach((s: { status: string; _count: number }) => { statusMap[s.status] = s._count; });
 
-    // Agrupar por status
-    const statusMap: { [key: string]: number } = {};
-    (leadsPorStatus as any[]).forEach((item: any) => {
-      statusMap[item.status] = item._count;
-    });
+    const totalStarts = startsAggregate._sum.starts ?? 0;
+    const startsPerSale = pixPaid > 0 ? +(totalStarts / pixPaid).toFixed(2) : 0;
 
     return {
-      period: {
-        startDate,
-        endDate,
-      },
+      period: { startDate: start, endDate: end },
       summary: {
         totalLeads,
-        leadsNovosPeriodo,
-        pixGerados,
-        pixPagos,
-        totalReceita: (totalReceita._sum as any).amount || 0,
-        conversionRate: parseFloat(conversionRate as string),
+        newLeads,
+        pixGenerated,
+        pixPaid,
+        revenue: revenue._sum.amount ?? 0,
+        conversionRate: newLeads > 0 ? +((pixPaid / newLeads) * 100).toFixed(2) : 0,
+        totalStarts,
+        startsPerSale,
       },
       statusBreakdown: {
         started: statusMap.started || 0,
-        generated_pix: statusMap.generated_pix || 0,
+        pix_generated: statusMap.pix_generated || 0,
         paid: statusMap.paid || 0,
-        failed: statusMap.failed || 0,
       },
     };
-  }
+  },
 
-  /**
-   * Obter lista de leads com filtros
-   */
   async getLeads(
     botId: string,
     userId: string,
-    options: {
-      status?: string;
-      page?: number;
-      pageSize?: number;
-      search?: string;
-      range?: DateRange;
-    } = {}
-  ): Promise<any> {
-    // Validar se bot existe
-    const bot = await prisma.bot.findFirst({
-      where: { id: botId, userId },
-    });
-
-    if (!bot) {
-      throw new Error('Bot não encontrado');
-    }
-
+    options: { status?: string; page?: number; pageSize?: number; search?: string; range?: DateRange } = {}
+  ) {
+    await assertBotOwner(botId, userId);
     const { status, page = 1, pageSize = 20, search, range } = options;
+    const { start, end } = calcRange(range);
     const skip = (page - 1) * pageSize;
-    const { startDate, endDate } = this.calculateDateRange(range);
 
-    // Construir filtro
-    const where: any = {
-      botId,
-      createdAt: { gte: startDate, lte: endDate },
-    };
-
-    if (status) {
-      where.status = status;
-    }
-
+    const where: any = { botId, createdAt: { gte: start, lte: end } };
+    if (status) where.status = status;
     if (search) {
       where.OR = [
         { telegramUsername: { contains: search, mode: 'insensitive' } },
-        { telegramFirstName: { contains: search, mode: 'insensitive' } },
+        { firstName: { contains: search, mode: 'insensitive' } },
         { telegramUserId: { contains: search } },
       ];
     }
 
-    // Buscar leads
     const [leads, total] = await Promise.all([
       prisma.lead.findMany({
         where,
-        include: {
-          payments: {
-            orderBy: { createdAt: 'desc' },
-            take: 1,
-          },
-          interactions: {
-            orderBy: { createdAt: 'desc' },
-            take: 5,
-          },
-        },
+        include: { payments: { orderBy: { createdAt: 'desc' }, take: 1 } },
         orderBy: { createdAt: 'desc' },
         skip,
         take: pageSize,
@@ -203,180 +94,66 @@ export class MetricsService {
     ]);
 
     return {
-      leads: (leads as any[]).map((lead: any) => this.formatLeadResponse(lead)),
-      pagination: {
-        page,
-        pageSize,
-        total,
-        totalPages: Math.ceil(total / pageSize),
-      },
+      leads: (leads as any[]).map((l) => ({
+        id: l.id,
+        telegramUserId: l.telegramUserId,
+        telegramUsername: l.telegramUsername,
+        firstName: l.firstName,
+        status: l.status,
+        pixCount: l.pixCount,
+        starts: l.starts,
+        paidAt: l.paidAt,
+        lastPayment: (l as any).payments[0] ?? null,
+        createdAt: l.createdAt,
+      })),
+      pagination: { page, pageSize, total, totalPages: Math.ceil(total / pageSize) },
     };
-  }
+  },
 
-  /**
-   * Obter detalhes de um lead
-   */
-  async getLeadDetails(
-    botId: string,
-    leadId: string,
-    userId: string
-  ): Promise<any> {
-    // Validar se bot existe
-    const bot = await prisma.bot.findFirst({
-      where: { id: botId, userId },
-    });
-
-    if (!bot) {
-      throw new Error('Bot não encontrado');
-    }
-
-    // Buscar lead
+  async getLeadDetails(botId: string, leadId: string, userId: string) {
+    await assertBotOwner(botId, userId);
     const lead = await prisma.lead.findFirst({
       where: { id: leadId, botId },
-      include: {
-        payments: {
-          orderBy: { createdAt: 'desc' },
-        },
-        interactions: {
-          orderBy: { createdAt: 'desc' },
-        },
-        delivery: true,
-      },
+      include: { payments: { include: { plan: true }, orderBy: { createdAt: 'desc' } } },
     });
+    if (!lead) throw new Error('Lead não encontrado');
+    return lead;
+  },
 
-    if (!lead) {
-      throw new Error('Lead não encontrado');
-    }
+  async getRevenueChart(botId: string, userId: string, days = 30) {
+    await assertBotOwner(botId, userId);
+    const start = new Date(Date.now() - days * 86400_000);
 
-    return {
-      ...this.formatLeadResponse(lead),
-      payments: lead.payments,
-      interactions: lead.interactions,
-      delivery: lead.delivery,
-    };
-  }
-
-  /**
-   * Obter gráfico de receita (últimos N dias)
-   */
-  async getRevenueChart(
-    botId: string,
-    userId: string,
-    days: number = 30
-  ): Promise<any[]> {
-    // Validar se bot existe
-    const bot = await prisma.bot.findFirst({
-      where: { id: botId, userId },
-    });
-
-    if (!bot) {
-      throw new Error('Bot não encontrado');
-    }
-
-    const startDate = new Date();
-    startDate.setDate(startDate.getDate() - days);
-
-    // Buscar pagamentos confirmados
     const payments = await prisma.payment.findMany({
-      where: {
-        lead: { botId },
-        status: 'confirmed',
-        confirmedAt: { gte: startDate },
-      },
-      select: {
-        amount: true,
-        confirmedAt: true,
-      },
-      orderBy: { confirmedAt: 'asc' },
+      where: { lead: { botId }, status: 'paid', paidAt: { gte: start } },
+      select: { amount: true, paidAt: true },
+      orderBy: { paidAt: 'asc' },
     });
 
-    // Agrupar por dia
-    const chartData: { [key: string]: number } = {};
-
-    // Inicializar todos os dias com 0
+    const chart: Record<string, number> = {};
     for (let i = 0; i < days; i++) {
-      const date = new Date();
-      date.setDate(date.getDate() - (days - 1 - i));
-      const dateStr = date.toISOString().split('T')[0];
-      chartData[dateStr] = 0;
+      const d = new Date(Date.now() - (days - 1 - i) * 86400_000);
+      chart[d.toISOString().slice(0, 10)] = 0;
     }
-
-    // Somar receitas
-    (payments as any[]).forEach((payment: any) => {
-      if (payment.confirmedAt) {
-        const dateStr = payment.confirmedAt.toISOString().split('T')[0];
-        chartData[dateStr] = (chartData[dateStr] || 0) + payment.amount;
-      }
+    payments.forEach((p: { amount: number; paidAt: Date | null }) => {
+      if (p.paidAt) chart[p.paidAt.toISOString().slice(0, 10)] = (chart[p.paidAt.toISOString().slice(0, 10)] || 0) + p.amount;
     });
 
-    // Converter para array
-    return Object.entries(chartData).map(([date, amount]) => ({
-      date,
-      amount: parseFloat((amount as number).toFixed(2)),
-    }));
-  }
+    return Object.entries(chart).map(([date, amount]) => ({ date, amount: +amount.toFixed(2) }));
+  },
 
-  /**
-   * Obter gráfico de conversão
-   */
-  async getConversionChart(
-    botId: string,
-    userId: string,
-    days: number = 30
-  ): Promise<any> {
-    // Validar se bot existe
-    const bot = await prisma.bot.findFirst({
-      where: { id: botId, userId },
-    });
+  async getConversionChart(botId: string, userId: string, days = 30) {
+    await assertBotOwner(botId, userId);
+    const start = new Date(Date.now() - days * 86400_000);
 
-    if (!bot) {
-      throw new Error('Bot não encontrado');
-    }
-
-    const startDate = new Date();
-    startDate.setDate(startDate.getDate() - days);
-
-    // Buscar dados por status
-    const statusData = await prisma.lead.groupBy({
+    const byStatus = await prisma.lead.groupBy({
       by: ['status'],
-      where: {
-        botId,
-        createdAt: { gte: startDate },
-      },
+      where: { botId, createdAt: { gte: start } },
       _count: true,
     });
 
-    return {
-      started: statusData.find((s: any) => s.status === 'started')?._count || 0,
-      generated_pix: statusData.find((s: any) => s.status === 'generated_pix')?._count || 0,
-      paid: statusData.find((s: any) => s.status === 'paid')?._count || 0,
-      failed: statusData.find((s: any) => s.status === 'failed')?._count || 0,
-    };
-  }
-
-  /**
-   * Formatar resposta de lead
-   */
-  private formatLeadResponse(lead: any): any {
-    const lastPayment = lead.payments?.[0];
-
-    return {
-      id: lead.id,
-      telegramUserId: lead.telegramUserId,
-      telegramUsername: lead.telegramUsername,
-      telegramFirstName: lead.telegramFirstName,
-      status: lead.status,
-      planDays: lead.planDays,
-      pixAttempts: lead.pixAttemptsCount,
-      totalMessages: lead.totalMessagesCount,
-      lastPaymentStatus: lastPayment?.status,
-      lastPaymentAmount: lastPayment?.amount,
-      lastPaymentDate: lastPayment?.confirmedAt,
-      paidAt: lead.paidAt,
-      createdAt: lead.createdAt,
-      updatedAt: lead.updatedAt,
-    };
-  }
-}
-
-export const metricsService = new MetricsService();
+    const m: Record<string, number> = {};
+    byStatus.forEach((s: { status: string; _count: number }) => { m[s.status] = s._count; });
+    return { started: m.started || 0, pix_generated: m.pix_generated || 0, paid: m.paid || 0 };
+  },
+};

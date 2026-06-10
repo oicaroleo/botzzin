@@ -1,134 +1,51 @@
 import { prisma } from '../db.js';
+import { gatewayService } from './gateway.service.js';
 
-export class PaymentService {
-  /**
-   * Criar registro de pagamento
-   */
-  async createPayment(
-    userId: string,
-    leadId: string,
-    amount: number,
-    gateway: string,
-    qrCode: string,
-    copyPaste: string,
-    expiresAt: Date
-  ) {
-    const payment = await prisma.payment.create({
-      data: {
-        userId,
-        leadId,
-        amount,
-        gateway,
-        qrCode,
-        copyPaste,
-        expiresAt,
-        status: 'pending',
-      },
-    });
-
-    return payment;
-  }
-
-  /**
-   * Confirmar pagamento via webhook
-   */
-  async confirmPayment(gatewayTxId: string, webhookData: any) {
-    const payment = await prisma.payment.update({
-      where: { gatewayTxId },
-      data: {
-        status: 'confirmed',
-        confirmedAt: new Date(),
-        webhookData,
-      },
-    });
-
-    return payment;
-  }
-
-  /**
-   * Obter pagamento por ID
-   */
-  async getPaymentById(paymentId: string) {
-    return await prisma.payment.findUnique({
-      where: { id: paymentId },
-    });
-  }
-
-  /**
-   * Obter pagamento por transaction ID do gateway
-   */
-  async getPaymentByGatewayTxId(gatewayTxId: string) {
-    return await prisma.payment.findFirst({
-      where: { gatewayTxId },
-    });
-  }
-
-  /**
-   * Obter pagamentos por lead
-   */
-  async getPaymentsByLeadId(leadId: string) {
-    return await prisma.payment.findMany({
-      where: { leadId },
-      orderBy: { createdAt: 'desc' },
-    });
-  }
-
-  /**
-   * Obter último pagamento de um lead
-   */
-  async getLastPaymentByLeadId(leadId: string) {
-    return await prisma.payment.findFirst({
-      where: { leadId },
-      orderBy: { createdAt: 'desc' },
-    });
-  }
-
-  /**
-   * Marcar pagamento como falhado
-   */
-  async failPayment(paymentId: string, reason: string) {
-    return await prisma.payment.update({
-      where: { id: paymentId },
-      data: {
-        status: 'failed',
-        webhookData: {
-          failedReason: reason,
-          failedAt: new Date().toISOString(),
-        },
-      },
-    });
-  }
-
-  /**
-   * Gerar PIX (cria um pagamento pendente)
-   */
-  async generatePIX(leadId: string, planId: string, amount: number, botId: string) {
-    try {
-      // Gerar QR code e copiar-colar
-      const qrCode = `https://qrcode.example.com/${Math.random().toString(36).substring(7)}`;
-      const copyPaste = `00020126580014br.gov.bcb.pix0136${Math.random().toString(36).substring(7)}520400005303986540510.995802BR5913BotZZIN6009Sao Paulo62370503***63041D3D`;
-
-      const payment = await this.createPayment(
-        botId,
-        leadId,
-        amount,
-        'pix',
-        qrCode,
-        copyPaste,
-        new Date(Date.now() + 30 * 60 * 1000) // Expira em 30 min
-      );
-
-      return {
-        id: payment.id,
-        qr_code: copyPaste, // Use snake_case para compatibilidade
-        amount: amount,
-        expiresAt: payment.expiresAt,
-      };
-    } catch (error) {
-      console.error('[PAYMENT] Error generating PIX:', error);
-      return null;
-    }
-  }
+export async function createPayment(params: {
+  leadId: string;
+  planId: string;
+  amount: number;
+  gateway: string;
+  gatewayTxId: string;
+  qrCode: string;
+  copyPaste: string;
+  expiresAt: Date;
+  gatewayConfigId?: string;
+}) {
+  return prisma.payment.create({ data: { ...params, status: 'pending' } });
 }
 
-export const paymentService = new PaymentService();
+export async function confirmPayment(gatewayTxId: string, webhookData: unknown) {
+  const pmt = await prisma.payment.update({
+    where: { gatewayTxId },
+    data:  { status: 'paid', paidAt: new Date(), webhookData: webhookData as any },
+    include: { lead: true },
+  });
+
+  // Atualiza lead
+  await prisma.lead.update({
+    where: { id: pmt.leadId },
+    data:  { status: 'paid', paidAt: new Date() },
+  });
+
+  // Rastreia conversão no gateway (A/B tracking)
+  if (pmt.gatewayConfigId) {
+    await gatewayService.trackPixPaid(pmt.gatewayConfigId, pmt.gateway);
+  }
+
+  return pmt;
+}
+
+export async function getPaymentByGatewayTxId(gatewayTxId: string) {
+  return prisma.payment.findUnique({
+    where:   { gatewayTxId },
+    include: { lead: { include: { bot: { include: { user: { include: { gateways: true } } } } } }, plan: true },
+  });
+}
+
+export async function getPaymentById(id: string) {
+  return prisma.payment.findUnique({
+    where:   { id },
+    include: { lead: { include: { bot: true } }, plan: true },
+  });
+}

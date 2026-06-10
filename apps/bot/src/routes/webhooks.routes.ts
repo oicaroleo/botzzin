@@ -1,124 +1,50 @@
 import { FastifyInstance } from 'fastify';
 import { config } from '../config.js';
 import { prisma } from '../db.js';
+import { requireAuth } from '../middleware/auth.js';
+import { botManagementService } from '../services/bot-management.service.js';
 
 export async function setupWebhooksRoutes(fastify: FastifyInstance) {
-  /**
-   * Ativar webhook para um bot específico
-   * POST /api/webhooks/setup?token=<bot_token>&botId=<bot_id>
-   */
-  fastify.post('/api/webhooks/setup', async (request, reply) => {
-    try {
-      const { token, botId } = request.query as { token?: string; botId?: string };
+  // POST /api/bots/:botId/webhook/register
+  fastify.post<{ Params: { botId: string } }>(
+    '/api/bots/:botId/webhook/register',
+    { onRequest: [requireAuth] },
+    async (request, reply) => {
+      const userId = (request as any).userId;
+      const { botId } = request.params;
 
-      if (!token) {
-        return reply.code(400).send({ error: 'Token do bot é obrigatório (parâmetro ?token=...)' });
-      }
-
-      if (!botId) {
-        return reply.code(400).send({ error: 'Bot ID é obrigatório (parâmetro ?botId=...)' });
-      }
-
-      // Buscar bot no banco para pegar Telegram Bot ID
-      const bot = await prisma.bot.findUnique({
-        where: { id: botId },
-        select: { id: true, telegramBotId: true },
+      const bot = await prisma.bot.findFirst({
+        where: { id: botId, userId },
+        select: { telegramBotToken: true },
       });
+      if (!bot) return reply.code(404).send({ error: 'Bot não encontrado' });
 
-      if (!bot) {
-        return reply.code(404).send({ error: 'Bot não encontrado' });
-      }
+      const webhookUrl = `${config.webhook.baseUrl}/webhook/${botId}`;
 
-      // Usar webhook com Telegram Bot ID (numérico): /webhook/{telegramBotId}
-      const webhookUrl = `${config.telegram.webhookUrl}/webhook/${bot.telegramBotId}`;
+      const res = await fetch(
+        `https://api.telegram.org/bot${bot.telegramBotToken}/setWebhook`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url: webhookUrl, allowed_updates: ['message', 'callback_query'] }),
+        }
+      );
+      const data = await res.json() as any;
 
-      console.log('[SETUP WEBHOOK] Setting webhook for bot:', botId);
-      console.log('[SETUP WEBHOOK] Telegram Bot ID:', bot.telegramBotId);
-      console.log('[SETUP WEBHOOK] Webhook URL:', webhookUrl);
-      console.log('[SETUP WEBHOOK] Token:', token.substring(0, 20) + '...');
-
-      // Chamar setWebhook via API com token do bot
-      const response = await fetch(`https://api.telegram.org/bot${token}/setWebhook`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url: webhookUrl }),
-      });
-
-      const data = (await response.json()) as any;
-
-      console.log('[SETUP WEBHOOK] Telegram API response:', data);
-
-      if (!response.ok || !data.ok) {
-        return reply.code(400).send({ error: 'Erro ao configurar webhook com Telegram', details: data });
-      }
-
-      reply.send({
-        success: true,
-        webhookUrl,
-        message: 'Webhook registrado com sucesso!',
-      });
-    } catch (err) {
-      console.error('[SETUP WEBHOOK ERROR]', err);
-      reply.code(500).send({ error: String(err) });
+      if (!data.ok) return reply.code(400).send({ error: data.description });
+      return reply.send({ ok: true, webhookUrl });
     }
-  });
+  );
 
-  /**
-   * Ativar webhook (rota alternativa /admin/setup-webhook para compatibilidade)
-   */
-  fastify.post('/admin/setup-webhook', async (request, reply) => {
-    try {
-      const { token, botId } = request.query as { token?: string; botId?: string };
-
-      if (!token) {
-        return reply.code(400).send({ error: 'Token do bot é obrigatório (parâmetro ?token=...)' });
-      }
-
-      if (!botId) {
-        return reply.code(400).send({ error: 'Bot ID é obrigatório (parâmetro ?botId=...)' });
-      }
-
-      // Buscar bot no banco para pegar Telegram Bot ID
-      const bot = await prisma.bot.findUnique({
-        where: { id: botId },
-        select: { id: true, telegramBotId: true },
-      });
-
-      if (!bot) {
-        return reply.code(404).send({ error: 'Bot não encontrado' });
-      }
-
-      // Usar webhook com Telegram Bot ID (numérico): /webhook/{telegramBotId}
-      const webhookUrl = `${config.telegram.webhookUrl}/webhook/${bot.telegramBotId}`;
-
-      console.log('[SETUP WEBHOOK] Setting webhook for bot:', botId);
-      console.log('[SETUP WEBHOOK] Telegram Bot ID:', bot.telegramBotId);
-      console.log('[SETUP WEBHOOK] Webhook URL:', webhookUrl);
-      console.log('[SETUP WEBHOOK] Token:', token.substring(0, 20) + '...');
-
-      // Chamar setWebhook via API com token do bot
-      const response = await fetch(`https://api.telegram.org/bot${token}/setWebhook`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url: webhookUrl }),
-      });
-
-      const data = (await response.json()) as any;
-
-      console.log('[SETUP WEBHOOK] Telegram API response:', data);
-
-      if (!response.ok || !data.ok) {
-        return reply.code(400).send({ error: 'Erro ao configurar webhook com Telegram', details: data });
-      }
-
-      reply.send({
-        success: true,
-        webhookUrl,
-        message: 'Webhook registrado com sucesso!',
-      });
-    } catch (err) {
-      console.error('[SETUP WEBHOOK ERROR]', err);
-      reply.code(500).send({ error: String(err) });
+  // GET /api/bots/:botId/webhook/status
+  fastify.get<{ Params: { botId: string } }>(
+    '/api/bots/:botId/webhook/status',
+    { onRequest: [requireAuth] },
+    async (request, reply) => {
+      const userId = (request as any).userId;
+      const { botId } = request.params;
+      const status = await botManagementService.getWebhookStatus(botId, userId);
+      return reply.send(status);
     }
-  });
+  );
 }

@@ -1,28 +1,27 @@
 interface MetricCardProps {
   label: string;
-  value: number;
-  icon: string;
-  color: 'blue' | 'purple' | 'yellow' | 'green' | 'red';
+  value: number | string;
+  icon?: string;
+  sub?: string;
+  accent?: boolean;
 }
 
-const colorStyles = {
-  blue: 'bg-blue-50 text-blue-600',
-  purple: 'bg-purple-50 text-purple-600',
-  yellow: 'bg-yellow-50 text-yellow-600',
-  green: 'bg-green-50 text-green-600',
-  red: 'bg-red-50 text-red-600',
-};
-
-export default function MetricCard({ label, value, icon, color }: MetricCardProps) {
+export default function MetricCard({ label, value, icon, sub, accent }: MetricCardProps) {
   return (
-    <div className={`${colorStyles[color]} rounded-lg shadow p-6`}>
-      <div className="flex items-start justify-between">
-        <div>
-          <p className="text-sm font-medium text-gray-600">{label}</p>
-          <p className="text-3xl font-bold mt-2">{value}</p>
-        </div>
-        <p className="text-4xl">{icon}</p>
+    <div className="card" style={{ padding: '20px 22px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
+        <div className="label">{label}</div>
+        {icon && <span style={{ fontSize: '18px', opacity: 0.6 }}>{icon}</span>}
       </div>
+      <div className="mono" style={{
+        fontSize: '30px', fontWeight: 700, lineHeight: 1, letterSpacing: '-1px',
+        color: accent ? '#BFFF00' : '#EEEEF8',
+      }}>
+        {value}
+      </div>
+      {sub && (
+        <div style={{ fontSize: '11px', color: '#404060', marginTop: '8px' }}>{sub}</div>
+      )}
     </div>
   );
 }

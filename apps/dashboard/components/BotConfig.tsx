@@ -11,7 +11,7 @@ interface BotConfigProps {
 
 export default function BotConfig({ bot, botId, onUpdate }: BotConfigProps) {
   const [welcomeMessage, setWelcomeMessage] = useState(bot.welcomeMessage || '');
-  const [channelId, setChannelId] = useState(bot.defaultChannelId || '');
+  const [channelId, setChannelId] = useState(bot.channelId || '');
   const [loading, setLoading] = useState(false);
   const [webhookLoading, setWebhookLoading] = useState(false);
   const [error, setError] = useState('');
@@ -19,7 +19,7 @@ export default function BotConfig({ bot, botId, onUpdate }: BotConfigProps) {
 
   useEffect(() => {
     setWelcomeMessage(bot.welcomeMessage || '');
-    setChannelId(bot.defaultChannelId || '');
+    setChannelId(bot.channelId || '');
   }, [bot]);
 
   const handleSave = async () => {
@@ -30,7 +30,7 @@ export default function BotConfig({ bot, botId, onUpdate }: BotConfigProps) {
     try {
       await botsAPI.update(botId, {
         welcomeMessage,
-        defaultChannelId: channelId,
+        channelId,
       });
       setSuccess('Configurações salvas com sucesso!');
       onUpdate();
@@ -47,7 +47,7 @@ export default function BotConfig({ bot, botId, onUpdate }: BotConfigProps) {
     setWebhookLoading(true);
 
     try {
-      const response = await webhookAPI.setupWebhook(bot.telegramBotToken, botId);
+      const response = await webhookAPI.setupWebhook(botId);
       setSuccess(`✅ Webhook ativado com sucesso! Bot está pronto para responder no Telegram.`);
       onUpdate();
     } catch (err: any) {
@@ -97,9 +97,9 @@ export default function BotConfig({ bot, botId, onUpdate }: BotConfigProps) {
               <p className="text-gray-900 font-medium">{bot.telegramBotId}</p>
             </div>
             <div>
-              <label className="text-sm text-gray-600">Token</label>
-              <p className="text-gray-900 font-medium font-mono text-sm break-all">
-                {bot.telegramBotToken.substring(0, 20)}...
+              <label className="text-sm text-gray-600">Status</label>
+              <p className="text-gray-900 font-medium">
+                {bot.status === 'active' ? '🟢 Ativo' : '🔴 Pausado'}
               </p>
             </div>
           </div>

@@ -1,9 +1,10 @@
 import type { NextConfig } from "next";
 
 // API backend URL - can be different from public API URL
-const API_BACKEND_URL = process.env.API_BACKEND_URL || 'http://localhost:3001';
+const API_BACKEND_URL = process.env.API_BACKEND_URL || 'http://localhost:3002';
 
 const nextConfig: NextConfig = {
+  devIndicators: false,
   // Server-side proxy for API requests
   // This allows calling /api/* which gets proxied to the backend
   rewrites: async () => {

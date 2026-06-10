@@ -32,9 +32,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const savedToken = localStorage.getItem('token');
     if (savedToken) {
       setToken(savedToken);
-      // TODO: Validar token com /api/auth/me
+      authAPI.me().then((res) => {
+        setUser(res.data.user || res.data);
+      }).catch(() => {
+        localStorage.removeItem('token');
+        setToken(null);
+      }).finally(() => setLoading(false));
+    } else {
+      setLoading(false);
     }
-    setLoading(false);
   }, []);
 
   const login = async (email: string, password: string) => {

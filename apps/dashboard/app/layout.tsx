@@ -1,34 +1,29 @@
-import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
-import { AuthProvider } from "@/lib/auth-context";
-import "./globals.css";
+import type { Metadata } from 'next';
+import { Syne, JetBrains_Mono } from 'next/font/google';
+import { AuthProvider } from '@/lib/auth-context';
+import './globals.css';
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
+const syne = Syne({
+  subsets: ['latin'],
+  variable: '--font-syne',
+  weight: ['400', '500', '600', '700', '800'],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+const mono = JetBrains_Mono({
+  subsets: ['latin'],
+  variable: '--font-mono',
+  weight: ['400', '500', '600'],
 });
 
 export const metadata: Metadata = {
-  title: "BotZZIN - Gerenciador de Bots Telegram",
-  description: "Gerencie e configure seus bots Telegram com facilidade",
+  title: 'BotZZIN — Automação de Vendas',
+  description: 'Gerencie seus bots de vendas no Telegram',
 };
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html
-      lang="pt-BR"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
-    >
-      <body className="min-h-full flex flex-col">
+    <html lang="pt-BR" className={`${syne.variable} ${mono.variable} h-full`}>
+      <body className="min-h-full">
         <AuthProvider>{children}</AuthProvider>
       </body>
     </html>
