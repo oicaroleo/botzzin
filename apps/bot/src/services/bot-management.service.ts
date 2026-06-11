@@ -11,6 +11,23 @@ export interface BotUpdateInput {
   status?: string;
 }
 
+// Updates que o webhook deve receber. `my_chat_member` é ESSENCIAL: é o evento
+// que dispara quando o bot vira (ou deixa de ser) admin de um canal/grupo —
+// sem ele a auto-detecção de canais nunca funciona.
+const WEBHOOK_ALLOWED_UPDATES = ['message', 'callback_query', 'my_chat_member'];
+
+// Configura (ou reconfigura) o webhook de um bot no Telegram.
+async function setBotWebhook(botId: string, token: string) {
+  const webhookUrl = `${config.webhook.baseUrl}/webhook/${botId}`;
+  const res = await fetch(`https://api.telegram.org/bot${token}/setWebhook`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ url: webhookUrl, allowed_updates: WEBHOOK_ALLOWED_UPDATES }),
+  });
+  const data = await res.json() as any;
+  return { ok: !!data.ok, url: webhookUrl, error: data.description as string | undefined };
+}
+
 async function validateTelegramToken(token: string): Promise<{ id: string; username: string }> {
   const clean = token.trim();
   if (!clean || !clean.includes(':')) throw new Error('Formato de token inválido');
@@ -46,15 +63,12 @@ export const botManagementService = {
       },
     });
 
-    // Configurar webhook automaticamente
+    // Configurar webhook automaticamente — ativa o bot e habilita a detecção
+    // de canais (my_chat_member) sem nenhuma ação extra do usuário.
     try {
-      const webhookUrl = `${config.webhook.baseUrl}/webhook/${bot.id}`;
-      await fetch(`https://api.telegram.org/bot${bot.telegramBotToken}/setWebhook`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url: webhookUrl }),
-      });
-      console.log(`[BOT CREATE] Webhook set: ${webhookUrl}`);
+      const r = await setBotWebhook(bot.id, bot.telegramBotToken);
+      if (r.ok) console.log(`[BOT CREATE] Webhook set: ${r.url}`);
+      else console.warn(`[BOT CREATE] setWebhook rejected: ${r.error}`);
     } catch (err) {
       console.warn('[BOT CREATE] Could not set webhook automatically:', err);
     }
@@ -132,15 +146,9 @@ export const botManagementService = {
     });
     if (!bot) throw new Error('Bot não encontrado');
 
-    const webhookUrl = `${config.webhook.baseUrl}/webhook/${botId}`;
-    const res = await fetch(`https://api.telegram.org/bot${bot.telegramBotToken}/setWebhook`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ url: webhookUrl, allowed_updates: ['message', 'callback_query'] }),
-    });
-    const data = await res.json() as any;
-    if (!data.ok) return { success: false, error: data.description };
-    return { success: true, url: webhookUrl };
+    const r = await setBotWebhook(botId, bot.telegramBotToken);
+    if (!r.ok) return { success: false, error: r.error };
+    return { success: true, url: r.url };
   },
 };
 

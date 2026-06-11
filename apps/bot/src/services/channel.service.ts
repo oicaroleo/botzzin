@@ -37,14 +37,50 @@ export async function sendMessage(
 }
 
 export async function answerCallbackQuery(botToken: string, callbackQueryId: string, text?: string) {
-  return callTelegram(botToken, 'answerCallbackQuery', {
-    callback_query_id: callbackQueryId,
-    ...(text ? { text } : {}),
-  });
+  // Best-effort: só remove o "loading" do botão. Se falhar (query expirada/inválida),
+  // não deve travar a ação do usuário (compra, etc.).
+  try {
+    return await callTelegram(botToken, 'answerCallbackQuery', {
+      callback_query_id: callbackQueryId,
+      ...(text ? { text } : {}),
+    });
+  } catch (e) {
+    console.warn('[TG] answerCallbackQuery falhou (ignorado):', (e as Error).message);
+  }
 }
 
 export async function sendChatAction(botToken: string, chatId: string | number, action: string) {
   return callTelegram(botToken, 'sendChatAction', { chat_id: chatId, action });
+}
+
+// Envia uma imagem PNG a partir de um data URI / base64 (ex.: QR Code do PIX).
+export async function sendPhotoBase64(
+  botToken: string,
+  chatId: string | number,
+  base64: string,
+  caption?: string,
+  extra: Record<string, unknown> = {},
+) {
+  const clean = base64.includes(',') ? base64.split(',')[1] : base64; // remove "data:image/png;base64,"
+  const buffer = Buffer.from(clean, 'base64');
+  const form = new FormData();
+  form.append('chat_id', String(chatId));
+  form.append('photo', new Blob([new Uint8Array(buffer)], { type: 'image/png' }), 'qrcode.png');
+  if (caption) { form.append('caption', caption); form.append('parse_mode', 'HTML'); }
+  for (const [k, v] of Object.entries(extra)) form.append(k, typeof v === 'string' ? v : JSON.stringify(v));
+
+  const res = await fetch(`${TG}/bot${botToken}/sendPhoto`, { method: 'POST', body: form });
+  const json = await res.json() as { ok: boolean; description?: string };
+  if (!json.ok) throw new Error(`Telegram sendPhoto falhou: ${json.description}`);
+  return json;
+}
+
+// Remove (expulsa) um membro do canal/grupo sem banir permanentemente: ban seguido
+// de unban deixa o usuário fora mas livre para reentrar numa futura renovação.
+export async function kickChatMember(botToken: string, chatId: string | number, userId: string | number) {
+  await callTelegram(botToken, 'banChatMember', { chat_id: chatId, user_id: userId });
+  // unban com only_if_banned para não recriar histórico; permite reentrada via novo link
+  await callTelegram(botToken, 'unbanChatMember', { chat_id: chatId, user_id: userId, only_if_banned: true });
 }
 
 // ─── Upload de mídia para o canal de cache → retorna file_id reutilizável ─────

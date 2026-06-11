@@ -263,6 +263,36 @@ function PlanDelivery({ plan, flow, flowId, channels, onUpdate }: { plan: any; f
   );
 }
 
+// Editor inline do desconto de renovação de um plano (salva no blur).
+function PlanRenewalRow({ plan, flowId, onUpdate }: { plan: any; flowId: string; onUpdate: () => void }) {
+  const [val, setVal] = useState(plan.renewalDiscount != null ? String(plan.renewalDiscount) : '0');
+  const [saving, setSaving] = useState(false);
+
+  const save = async () => {
+    const num = Math.min(Math.max(parseFloat(val) || 0, 0), 100);
+    if (num === (plan.renewalDiscount ?? 0)) return;
+    setSaving(true);
+    try { await flowAPI.updatePlan(flowId, plan.id, { renewalDiscount: num }); onUpdate(); }
+    catch (e: any) { alert(e.response?.data?.error || 'Erro'); }
+    finally { setSaving(false); }
+  };
+
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '12px', paddingTop: '12px', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+      <span style={{ fontSize: '12px', color: '#7878A0', fontWeight: 600 }}>Desconto na renovação:</span>
+      <input className="inp mono" type="number" min="0" max="100" value={val}
+        onChange={e => setVal(e.target.value)} onBlur={save}
+        style={{ width: '70px', padding: '5px 8px', fontSize: '12px' }}/>
+      <span style={{ fontSize: '12px', color: '#505070' }}>%{saving ? ' · salvando...' : ''}</span>
+      {(parseFloat(val) || 0) > 0 && (
+        <span style={{ fontSize: '11px', color: '#BFFF00', marginLeft: 'auto' }}>
+          Renovação: R$ {(plan.price * (1 - (parseFloat(val) || 0) / 100)).toFixed(2)}
+        </span>
+      )}
+    </div>
+  );
+}
+
 function PlanosTab({ flow, flowId, channels, onUpdate }: { flow: any; flowId: string; channels: Channel[]; onUpdate: () => void }) {
   const plans = flow.plans || [];
   const [open,  setOpen]  = useState(false);
@@ -271,6 +301,7 @@ function PlanosTab({ flow, flowId, channels, onUpdate }: { flow: any; flowId: st
   const [days,  setDays]  = useState('30');
   const [desc,  setDesc]  = useState('');
   const [emoji, setEmoji] = useState('💎');
+  const [renew, setRenew] = useState('0');
   const [saving, setSaving] = useState(false);
   const [err,   setErr]   = useState('');
 
@@ -296,8 +327,8 @@ function PlanosTab({ flow, flowId, channels, onUpdate }: { flow: any; flowId: st
   const create = async () => {
     setSaving(true); setErr('');
     try {
-      await flowAPI.createPlan(flowId, { name, price: parseFloat(price), days: parseInt(days), description: desc, emoji });
-      setOpen(false); setName(''); setPrice(''); setDays('30'); setDesc(''); setEmoji('💎');
+      await flowAPI.createPlan(flowId, { name, price: parseFloat(price), days: parseInt(days), description: desc, emoji, renewalDiscount: parseFloat(renew) || 0 });
+      setOpen(false); setName(''); setPrice(''); setDays('30'); setDesc(''); setEmoji('💎'); setRenew('0');
       onUpdate();
     } catch (e: any) { setErr(e.response?.data?.error || 'Erro ao criar plano'); }
     finally { setSaving(false); }
@@ -356,10 +387,12 @@ function PlanosTab({ flow, flowId, channels, onUpdate }: { flow: any; flowId: st
               <div><Label>NOME DO PLANO</Label><input className="inp" value={name} onChange={e => setName(e.target.value)} placeholder="Ex: Plano Mensal"/></div>
               <div><Label>EMOJI</Label><input className="inp" value={emoji} onChange={e => setEmoji(e.target.value)} style={{ width: '60px', textAlign: 'center', fontSize: '18px' }}/></div>
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px' }}>
               <div><Label>PREÇO (R$)</Label><input className="inp mono" type="number" step="0.01" value={price} onChange={e => setPrice(e.target.value)} placeholder="29.90"/></div>
               <div><Label>DURAÇÃO (dias)</Label><input className="inp mono" type="number" value={days} onChange={e => setDays(e.target.value)}/></div>
+              <div><Label>DESC. RENOVAÇÃO (%)</Label><input className="inp mono" type="number" min="0" max="100" value={renew} onChange={e => setRenew(e.target.value)} placeholder="0"/></div>
             </div>
+            <div style={{ fontSize: '11px', color: '#404060', marginTop: '-4px' }}>Desconto aplicado quando o lead renova antes de expirar (0 = sem desconto).</div>
             <div><Label>DESCRIÇÃO (opcional)</Label><input className="inp" value={desc} onChange={e => setDesc(e.target.value)} placeholder="O que o lead recebe..."/></div>
             <div style={{ fontSize: '11px', color: '#404060' }}>O entregável (padrão ou próprio) é configurado no card do plano após criar.</div>
             <button className="btn btn-primary" onClick={create} disabled={saving || !name || !price} style={{ padding: '11px' }}>
@@ -405,6 +438,7 @@ function PlanosTab({ flow, flowId, channels, onUpdate }: { flow: any; flowId: st
                     onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.color = '#404060'; }}>×</button>
                 </div>
               </div>
+              <PlanRenewalRow plan={p} flowId={flowId} onUpdate={onUpdate}/>
               <PlanDelivery plan={p} flow={flow} flowId={flowId} channels={channels} onUpdate={onUpdate}/>
             </div>
           ))}
@@ -525,7 +559,7 @@ function StatPill({ label, value, accent }: { label: string; value: string; acce
   );
 }
 
-function BotsTab({ flow, flowId, channels, onUpdate }: { flow: any; flowId: string; channels: Channel[]; onUpdate: () => void }) {
+function BotsTab({ flow, flowId, channels, onUpdate, onReloadChannels }: { flow: any; flowId: string; channels: Channel[]; onUpdate: () => void; onReloadChannels: () => Promise<void> }) {
   const [allBots, setAllBots] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -536,6 +570,32 @@ function BotsTab({ flow, flowId, channels, onUpdate }: { flow: any; flowId: stri
   const [domain,   setDomain]   = useState(flow.redirectDomain || '');
   const [savingCfg, setSavingCfg] = useState(false);
   const [notice,   setNotice]   = useState<{ type: 'ok'|'err'; text: string }|null>(null);
+
+  // Sync manual de canal
+  const [syncInput,  setSyncInput]  = useState('');
+  const [syncing,    setSyncing]    = useState(false);
+  const [reloading,  setReloading]  = useState(false);
+  const [syncNotice, setSyncNotice] = useState<{ type: 'ok'|'err'; text: string }|null>(null);
+
+  const handleReloadChannels = async () => {
+    setReloading(true);
+    await onReloadChannels();
+    setReloading(false);
+  };
+
+  const handleSyncChannel = async () => {
+    if (!syncInput.trim()) return;
+    setSyncing(true); setSyncNotice(null);
+    try {
+      const r = await flowAPI.syncChannel(flowId, syncInput.trim());
+      const count = r.data?.synced ?? 0;
+      setSyncNotice({ type: 'ok', text: `${count} bot(s) sincronizado(s) com sucesso!` });
+      setSyncInput('');
+      await onReloadChannels();
+    } catch (e: any) {
+      setSyncNotice({ type: 'err', text: e.response?.data?.error || 'Erro ao sincronizar canal' });
+    } finally { setSyncing(false); }
+  };
 
   useEffect(() => {
     botsAPI.list().then(r => {
@@ -643,6 +703,46 @@ function BotsTab({ flow, flowId, channels, onUpdate }: { flow: any; flowId: stri
           Canal/grupo onde os bots deste fluxo são <strong style={{ color: '#7878A0' }}>administradores</strong>. As mídias de prévia
           (foto/vídeo/áudio da boas-vindas, downsell, upsell, packs…) ficam armazenadas aqui, no seu próprio Telegram.
         </p>
+
+        {/* Painel de sincronização */}
+        <div style={{ background: 'rgba(0,229,255,0.04)', border: '1px solid rgba(0,229,255,0.12)', borderRadius: '10px', padding: '14px', marginBottom: '16px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
+            <span style={{ fontSize: '12px', fontWeight: 700, color: '#00E5FF', letterSpacing: '0.05em' }}>CANAIS DETECTADOS ({channels.length})</span>
+            <button onClick={handleReloadChannels} disabled={reloading} style={{
+              background: 'none', border: '1px solid rgba(0,229,255,0.25)', borderRadius: '6px',
+              color: reloading ? '#404060' : '#00E5FF', cursor: reloading ? 'default' : 'pointer',
+              fontSize: '11px', fontWeight: 700, padding: '4px 10px', fontFamily: 'inherit',
+            }}>
+              {reloading ? 'Recarregando...' : 'Recarregar'}
+            </button>
+          </div>
+          <p style={{ fontSize: '11px', color: '#505070', margin: '0 0 10px', lineHeight: 1.5 }}>
+            Se o bot já é admin mas o canal não aparece, cole o @username ou ID abaixo para forçar a detecção:
+          </p>
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <input className="inp mono" value={syncInput} onChange={e => setSyncInput(e.target.value)}
+              placeholder="@meucanal ou -1001234567890"
+              style={{ flex: 1, fontSize: '12px', padding: '8px 12px' }}
+              onKeyDown={e => { if (e.key === 'Enter') handleSyncChannel(); }}
+            />
+            <button onClick={handleSyncChannel} disabled={syncing || !syncInput.trim()} style={{
+              background: syncing || !syncInput.trim() ? 'rgba(0,229,255,0.05)' : 'rgba(0,229,255,0.15)',
+              border: '1px solid rgba(0,229,255,0.25)', borderRadius: '7px',
+              color: syncing || !syncInput.trim() ? '#404060' : '#00E5FF',
+              cursor: syncing || !syncInput.trim() ? 'default' : 'pointer',
+              fontSize: '12px', fontWeight: 700, padding: '8px 14px', fontFamily: 'inherit', whiteSpace: 'nowrap',
+            }}>
+              {syncing ? 'Verificando...' : 'Sincronizar'}
+            </button>
+          </div>
+          {syncNotice && (
+            <div style={{
+              marginTop: '8px', fontSize: '12px', fontWeight: 600,
+              color: syncNotice.type === 'ok' ? '#BFFF00' : '#FF3B4E',
+            }}>{syncNotice.type === 'ok' ? '✓ ' : '✗ '}{syncNotice.text}</div>
+          )}
+        </div>
+
         <Label>CANAL/GRUPO DE CACHE</Label>
         <ChannelPicker channels={channels} value={cacheId} onChange={setCacheId}/>
         <div style={{ fontSize: '11px', color: '#404060', marginTop: '8px', lineHeight: 1.5 }}>
@@ -1303,6 +1403,7 @@ interface PayCfg {
   pixFormat: 'mono' | 'plain';
   approvedText: string;
   approvedBtnLabel: string;
+  pixMediaFileIds: any[];
 }
 
 const DEFAULT_PAYCFG: PayCfg = {
@@ -1320,6 +1421,7 @@ const DEFAULT_PAYCFG: PayCfg = {
   pixFormat: 'mono',
   approvedText: '✅ <b>Pagamento Aprovado!</b>\n\nParabéns {nome}! Seu acesso ao plano {plano} foi liberado. 🎉',
   approvedBtnLabel: '🔓 Acessar Conteúdo',
+  pixMediaFileIds: [],
 };
 
 const PIX_VARS = ['{nome}', '{plano}', '{valor}', '{qr_code}', '{saudacao}', '{uf}'];
@@ -1365,6 +1467,16 @@ function PaymentsTab({ flow, flowId, onUpdate }: { flow: any; flowId: string; on
       setNotice({ type: 'ok', text: 'Pagamento salvo!' }); onUpdate();
     } catch (e: any) { setNotice({ type: 'err', text: e.response?.data?.error || 'Erro' }); }
     finally { setLoading(false); }
+  };
+
+  // Confirmação do plano salva na hora (sem depender do botão Salvar)
+  const toggleConfirm = async (v: boolean) => {
+    const next = { ...cfg, confirmPlan: v };
+    setCfg(next);
+    try {
+      await flowAPI.update(flowId, { paymentConfig: next });
+      setNotice({ type: 'ok', text: `Confirmação do plano ${v ? 'ativada' : 'desativada'}.` }); onUpdate();
+    } catch (e: any) { setNotice({ type: 'err', text: e.response?.data?.error || 'Erro ao salvar' }); }
   };
 
   const pillBtn = (active: boolean): React.CSSProperties => ({
@@ -1419,7 +1531,7 @@ function PaymentsTab({ flow, flowId, onUpdate }: { flow: any; flowId: string; on
                 <div style={{ fontSize: '13px', fontWeight: 600, color: '#EEEEF8' }}>Confirmação do plano</div>
                 <div style={{ fontSize: '11px', color: '#404060' }}>Mostra os detalhes antes de gerar o PIX</div>
               </div>
-              <Toggle on={cfg.confirmPlan} onChange={v => set({ confirmPlan: v })} label=""/>
+              <Toggle on={cfg.confirmPlan} onChange={toggleConfirm} label=""/>
             </div>
 
             {/* Texto do PIX */}
@@ -1428,16 +1540,9 @@ function PaymentsTab({ flow, flowId, onUpdate }: { flow: any; flowId: string; on
                 <span style={{ fontSize: '13px', fontWeight: 600, color: '#EEEEF8' }}>Texto do PIX</span>
               </div>
 
-              {/* mídias (até 3) */}
-              <Label>MÍDIAS (até 3)</Label>
-              <div style={{ display: 'flex', gap: '10px', marginBottom: '14px' }}>
-                {[0,1,2].map(i => (
-                  <div key={i} style={{
-                    width: '64px', height: '64px', borderRadius: '8px', border: '2px dashed rgba(255,255,255,0.1)',
-                    display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-                    color: '#404060', fontSize: '20px', cursor: 'not-allowed', opacity: i === 0 ? 1 : 0.4,
-                  }} title="Upload disponível em breve">＋<span style={{ fontSize: '8px' }}>mídia</span></div>
-                ))}
+              {/* mídias próprias do PIX (branding) — até 3 */}
+              <div style={{ marginBottom: '14px' }}>
+                <MediaSlots flowId={flowId} fileIds={cfg.pixMediaFileIds || []} onChange={ids => set({ pixMediaFileIds: ids })}/>
               </div>
 
               {/* toolbar */}
@@ -1585,6 +1690,13 @@ export default function FlowDetailPage() {
     finally { setLoading(false); }
   };
 
+  const reloadChannels = async () => {
+    try {
+      const c = await flowAPI.channels(flowId);
+      setChannels(c.data?.channels ?? []);
+    } catch {}
+  };
+
   if (loading) return <div style={{ padding: '60px', textAlign: 'center', color: '#505070' }}>Carregando...</div>;
   if (!flow)   return <div style={{ padding: '60px', textAlign: 'center', color: '#FF3B4E' }}>Fluxo não encontrado</div>;
 
@@ -1632,7 +1744,7 @@ export default function FlowDetailPage() {
 
       {tab === 'mensagens' && <MensagensTab flow={flow} flowId={flowId} onUpdate={load}/>}
       {tab === 'planos'    && <PlanosTab    flow={flow} flowId={flowId} channels={channels} onUpdate={load}/>}
-      {tab === 'bots'      && <BotsTab      flow={flow} flowId={flowId} channels={channels} onUpdate={load}/>}
+      {tab === 'bots'      && <BotsTab      flow={flow} flowId={flowId} channels={channels} onUpdate={load} onReloadChannels={reloadChannels}/>}
       {tab === 'pagamentos'&& <PaymentsTab  flow={flow} flowId={flowId} onUpdate={load}/>}
       {tab === 'upsell'    && <FunnelEditor flow={flow} flowId={flowId} channels={channels} kind="upsell"   onUpdate={load}/>}
       {tab === 'downsell'  && <FunnelEditor flow={flow} flowId={flowId} channels={channels} kind="downsell" onUpdate={load}/>}

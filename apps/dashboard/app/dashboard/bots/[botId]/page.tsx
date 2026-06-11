@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { botsAPI, metricsAPI, webhookAPI } from '@/lib/api';
+import { botsAPI, metricsAPI } from '@/lib/api';
 
 /* ──────────────────────────────────────────────────────────────
    Shared helpers
@@ -34,21 +34,9 @@ function Notice({ type, text }: { type: 'ok' | 'err'; text: string }) {
 ────────────────────────────────────────────────────────────── */
 function ConfigTab({ bot, botId, onUpdate }: { bot: any; botId: string; onUpdate: () => void }) {
   const [name, setName] = useState(bot.name || '');
-  const [hookLoading, setHookLoading] = useState(false);
   const [notice, setNotice] = useState<{ type: 'ok' | 'err'; text: string } | null>(null);
 
   useEffect(() => { setName(bot.name || ''); }, [bot]);
-
-  const registerWebhook = async () => {
-    setHookLoading(true); setNotice(null);
-    try {
-      await webhookAPI.setupWebhook(botId);
-      setNotice({ type: 'ok', text: 'Webhook registrado! Bot está ativo no Telegram.' });
-      onUpdate();
-    }
-    catch (e: any) { setNotice({ type: 'err', text: e.response?.data?.error || 'Erro ao registrar webhook' }); }
-    finally { setHookLoading(false); }
-  };
 
   const saveName = async () => {
     try { await botsAPI.update(botId, { name }); setNotice({ type: 'ok', text: 'Nome atualizado.' }); onUpdate(); }
@@ -81,10 +69,16 @@ function ConfigTab({ bot, botId, onUpdate }: { bot: any; botId: string; onUpdate
             </div>
           ))}
         </div>
-        <button className="btn btn-ghost" onClick={registerWebhook} disabled={hookLoading}
-          style={{ width: '100%', fontSize: '12px', padding: '9px' }}>
-          {hookLoading ? 'Registrando...' : '↗ Registrar / Atualizar Webhook'}
-        </button>
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: '8px',
+          background: 'rgba(191,255,0,0.06)', border: '1px solid rgba(191,255,0,0.15)',
+          borderRadius: '8px', padding: '10px 12px',
+        }}>
+          <span className="dot dot-on"/>
+          <span style={{ fontSize: '12px', color: '#9D9DBB', lineHeight: 1.4 }}>
+            Webhook ativado automaticamente. O bot já está ouvindo mensagens e detecta canais onde for admin.
+          </span>
+        </div>
       </div>
 
       {/* Nome interno */}

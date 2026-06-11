@@ -111,6 +111,21 @@ export async function setupFlowRoutes(fastify: FastifyInstance) {
     }
   );
 
+  // POST /api/flows/:flowId/channels/sync — detecta admin via getChatAdministrators
+  fastify.post('/api/flows/:flowId/channels/sync', { onRequest: [requireAuth] },
+    async (req: FastifyRequest, reply: FastifyReply) => {
+      const userId = (req as any).userId;
+      const { flowId } = req.params as { flowId: string };
+      const { chatId } = (req.body as any) || {};
+      if (!chatId) return reply.code(400).send({ error: 'chatId é obrigatório' });
+      try {
+        const result = await flowService.syncChannel(flowId, userId, String(chatId));
+        const channels = await flowService.listFlowChannels(flowId, userId);
+        return reply.send({ ...result, channels });
+      } catch (e: any) { return reply.code(400).send({ error: e.message }); }
+    }
+  );
+
   // POST /api/flows/:flowId/media — upload de mídia (base64 JSON) p/ canal de cache
   fastify.post('/api/flows/:flowId/media', { onRequest: [requireAuth], bodyLimit: 45 * 1024 * 1024 },
     async (req: FastifyRequest, reply: FastifyReply) => {

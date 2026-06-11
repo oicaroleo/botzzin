@@ -61,6 +61,7 @@ export const flowAPI = {
   list:          ()                             => api.get('/api/flows'),
   get:           (flowId: string)               => api.get(`/api/flows/${flowId}`),
   channels:      (flowId: string)               => api.get(`/api/flows/${flowId}/channels`),
+  syncChannel:   (flowId: string, chatId: string) => api.post(`/api/flows/${flowId}/channels/sync`, { chatId }),
   create:        (data: any)                    => api.post('/api/flows', data),
   update:        (flowId: string, data: any)    => api.patch(`/api/flows/${flowId}`, data),
   remove:        (flowId: string)               => api.delete(`/api/flows/${flowId}`),
@@ -88,6 +89,25 @@ function fileToBase64(file: File): Promise<string> {
     reader.onerror = () => reject(reader.error);
     reader.readAsDataURL(file);
   });
+}
+
+// ── Leads (nível de conta) ───────────────────────────────────────────────────
+export const leadsAPI = {
+  summary: (params?: any) => api.get('/api/leads/summary', { params }),
+  list:    (params?: any) => api.get('/api/leads', { params }),
+  get:     (leadId: string) => api.get(`/api/leads/${leadId}`),
+  resendAccess:   (leadId: string) => api.post(`/api/leads/${leadId}/resend-access`, {}),
+  downloadReport: (leadId: string) => api.get(`/api/leads/${leadId}/report`, { responseType: 'blob' }),
+  exportCsv:      (params?: any)    => api.get('/api/leads/export', { params, responseType: 'blob' }),
+};
+
+// Dispara o download de uma resposta blob (PDF/CSV) no navegador.
+export function downloadBlob(data: Blob, filename: string) {
+  const url = URL.createObjectURL(data);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click();
+  a.remove(); URL.revokeObjectURL(url);
 }
 
 export const metricsAPI = {

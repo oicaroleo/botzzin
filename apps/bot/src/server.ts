@@ -12,6 +12,7 @@ import { setupWebhooksRoutes } from './routes/webhooks.routes.js';
 import { setupAdminRoutes } from './routes/admin.routes.js';
 import { setupGatewayRoutes } from './routes/gateway.routes.js';
 import { setupFlowRoutes } from './routes/flow.routes.js';
+import { setupLeadsRoutes } from './routes/leads.routes.js';
 
 const ALLOWED_ORIGINS = [
   'http://localhost:3000',
@@ -47,6 +48,7 @@ export async function createServer() {
   await setupPaymentWebhook(fastify);
   await setupGatewayRoutes(fastify);
   await setupFlowRoutes(fastify);
+  await setupLeadsRoutes(fastify);
 
   fastify.get('/health', async () => ({ status: 'ok', ts: new Date().toISOString() }));
 

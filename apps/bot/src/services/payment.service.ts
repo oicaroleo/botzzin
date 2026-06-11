@@ -11,6 +11,7 @@ export async function createPayment(params: {
   copyPaste: string;
   expiresAt: Date;
   gatewayConfigId?: string;
+  funnelStepId?: string;
 }) {
   return prisma.payment.create({ data: { ...params, status: 'pending' } });
 }

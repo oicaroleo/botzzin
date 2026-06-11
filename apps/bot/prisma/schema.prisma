@@ -157,6 +157,10 @@ model Flow {
   channelId       String?   // ID do canal/grupo (entrega via canal/grupo)
   deliveryValue   String?   // link ou texto da mensagem (entrega via link/message)
 
+  // ── Renovação ──
+  // Quantas horas antes de expirar o bot envia a oferta de renovação (com desconto por plano).
+  renewalWarnHours Int      @default(24)
+
   // ── Variação de preço (anti-fraude: preço único por lead) ──
   // Quando ativo, soma um valor aleatório entre [min, max] ao preço de cada plano.
   // O valor é determinístico por lead — o mesmo lead sempre vê o mesmo preço.
@@ -314,6 +318,10 @@ model Plan {
   deliveryType       String? // channel | group | link | message
   deliveryValue      String? // channelId, link ou texto da mensagem
 
+  // ── Renovação ──
+  // Desconto (%) aplicado ao preço quando o lead renova via oferta de renovação.
+  renewalDiscount    Float   @default(0) // 0–100 (%)
+
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
@@ -334,23 +342,56 @@ model Lead {
   telegramUsername String?
   firstName        String?
 
-  status           String    @default("started") // started | pix_generated | paid
+  status           String    @default("started") // started | pix_generated | paid | expired
 
   pixCount         Int       @default(0)
   starts           Int       @default(1) // quantas vezes deu /start
 
   paidAt           DateTime?
   accessExpiresAt  DateTime?
+  renewalWarnedAt  DateTime? // quando a oferta de renovação foi enviada (evita duplicar)
+  removedAt        DateTime? // quando o lead foi removido do canal por expiração
+  blockedAt        DateTime? // quando o lead bloqueou o bot (my_chat_member kicked no privado)
 
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
 
   payments         Payment[]
+  events           LeadEvent[]
+  funnelProgress   FunnelProgress[]
 
   @@unique([botId, telegramUserId])
   @@index([botId, status])
   @@index([flowId])
   @@index([createdAt])
+}
+
+// ─── Progresso da esteira (upsell/downsell) por lead ────────────────────────────
+model FunnelProgress {
+  id        String   @id @default(cuid())
+  leadId    String
+  lead      Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  kind      String   // upsell | downsell
+  nextOrder Int      @default(0)   // índice do próximo step a enviar
+  sendAt    DateTime                // quando enviar o próximo step
+  status    String   @default("active") // active | done | stopped
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([leadId, kind])
+  @@index([status, sendAt])
+}
+
+// ─── Timeline do lead (log enxuto de marcos do ciclo de vida) ───────────────────
+model LeadEvent {
+  id        String   @id @default(cuid())
+  leadId    String
+  lead      Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  type      String   // started | plan_selected | pix_generated | paid | access_granted | renewal_offered | access_expired | removed | blocked
+  meta      Json?    // dados mínimos: {planId,planName,amount,paymentId,e2e,channelId,days,expiresAt}
+  createdAt DateTime @default(now())
+
+  @@index([leadId, createdAt])
 }
 
 // ─── Pagamento ────────────────────────────────────────────────────────────────
@@ -369,6 +410,8 @@ model Payment {
   amount      Float
   gateway     String              // "pushinpay"
   gatewayTxId String?   @unique
+  endToEndId  String?             // código E2E do PIX pago (defesa MED/chargeback)
+  funnelStepId String?            // step da esteira que gerou esta compra (override de entrega)
 
   status      String    @default("pending") // pending | paid | expired | failed
 
@@ -386,4 +429,5 @@ model Payment {
   @@index([leadId])
   @@index([status])
   @@index([gatewayConfigId])
+  @@index([endToEndId])
 }

@@ -21,6 +21,11 @@ const NAV = [
     icon: <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><circle cx="2.5" cy="7.5" r="1.5" stroke="currentColor" strokeWidth="1.3"/><circle cx="12.5" cy="3.5" r="1.5" stroke="currentColor" strokeWidth="1.3"/><circle cx="12.5" cy="11.5" r="1.5" stroke="currentColor" strokeWidth="1.3"/><path d="M4 7.5h3l2-4h1.5M4 7.5h3l2 4h1.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/></svg>,
   },
   {
+    href: '/dashboard/leads',
+    label: 'Leads',
+    icon: <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><circle cx="5.5" cy="4.5" r="2.5" stroke="currentColor" strokeWidth="1.3"/><path d="M1.5 13c0-2.2 1.8-4 4-4s4 1.8 4 4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/><path d="M10 2.2a2.5 2.5 0 010 4.6M11.5 13c0-1.6-.7-3-1.8-3.6" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" opacity=".6"/></svg>,
+  },
+  {
     href: '/dashboard/gateways',
     label: 'Gateways PIX',
     icon: <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><rect x="1" y="3" width="13" height="9" rx="1.5" stroke="currentColor" strokeWidth="1.3"/><path d="M1 6h13" stroke="currentColor" strokeWidth="1.3"/><rect x="3" y="8.5" width="3" height="1.5" rx=".5" fill="currentColor" opacity=".7"/></svg>,

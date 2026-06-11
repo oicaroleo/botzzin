@@ -211,7 +211,7 @@ export const flowService = {
 
   async createPlan(flowId: string, userId: string, input: {
     name: string; price: number; days: number; description?: string; emoji?: string; sortOrder?: number;
-    useDefaultDelivery?: boolean; deliveryType?: string; deliveryValue?: string;
+    useDefaultDelivery?: boolean; deliveryType?: string; deliveryValue?: string; renewalDiscount?: number;
   }) {
     await assertFlowOwner(flowId, userId);
     if (!input.name?.trim()) throw new Error('Nome do plano é obrigatório');
@@ -235,6 +235,7 @@ export const flowService = {
         useDefaultDelivery: input.useDefaultDelivery ?? true,
         deliveryType: input.deliveryType,
         deliveryValue: input.deliveryValue,
+        renewalDiscount: Math.min(Math.max(input.renewalDiscount ?? 0, 0), 100),
       },
     });
   },
@@ -243,6 +244,9 @@ export const flowService = {
     await assertFlowOwner(flowId, userId);
     const plan = await prisma.plan.findFirst({ where: { id: planId, flowId } });
     if (!plan) throw new Error('Plano não encontrado');
+    if (input.renewalDiscount !== undefined) {
+      input.renewalDiscount = Math.min(Math.max(Number(input.renewalDiscount) || 0, 0), 100);
+    }
     return prisma.plan.update({ where: { id: planId }, data: input });
   },
 
@@ -388,6 +392,59 @@ export const flowService = {
     const seen = new Map<string, { chatId: string; title: string | null; type: string }>();
     for (const c of chans) if (!seen.has(c.chatId)) seen.set(c.chatId, { chatId: c.chatId, title: c.title, type: c.type });
     return Array.from(seen.values());
+  },
+
+  // ─── Sync manual: verifica admin via getChatAdministrators e salva no banco ─
+  // Aceita @username ou ID numérico do canal/grupo. Itera sobre todos os bots do
+  // fluxo e registra aqueles que forem administradores do chat fornecido.
+  async syncChannel(flowId: string, userId: string, chatId: string) {
+    await assertFlowOwner(flowId, userId);
+    const fbs = await prisma.flowBot.findMany({
+      where: { flowId },
+      include: { bot: { select: { id: true, telegramBotId: true, telegramBotToken: true } } },
+    });
+    if (!fbs.length) throw new Error('Nenhum bot no fluxo');
+
+    const TG = 'https://api.telegram.org';
+    const target = chatId.trim();
+    let added = 0;
+
+    for (const fb of fbs) {
+      const { id: botId, telegramBotId, telegramBotToken } = fb.bot as any;
+      if (!telegramBotToken) continue;
+
+      // Busca info do chat
+      const chatRes = await fetch(`${TG}/bot${telegramBotToken}/getChat`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ chat_id: target }),
+      });
+      const chatJson = await chatRes.json() as { ok: boolean; result?: any; description?: string };
+      if (!chatJson.ok) throw new Error(`Telegram getChat: ${chatJson.description}`);
+      const chat = chatJson.result;
+
+      // Verifica se o bot é admin
+      const admRes = await fetch(`${TG}/bot${telegramBotToken}/getChatAdministrators`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ chat_id: target }),
+      });
+      const admJson = await admRes.json() as { ok: boolean; result?: any[]; description?: string };
+      if (!admJson.ok) throw new Error(`Telegram getChatAdministrators: ${admJson.description}`);
+
+      const isAdmin = admJson.result!.some(
+        (m: any) => String(m.user?.id) === String(telegramBotId) &&
+          (m.status === 'administrator' || m.status === 'creator')
+      );
+
+      await prisma.botChannel.upsert({
+        where: { botId_chatId: { botId, chatId: String(chat.id) } },
+        create: { botId, chatId: String(chat.id), title: chat.title ?? null, type: chat.type, isAdmin },
+        update: { title: chat.title ?? null, type: chat.type, isAdmin },
+      });
+      if (isAdmin) added++;
+    }
+
+    if (added === 0) throw new Error('Nenhum dos bots do fluxo é administrador neste canal/grupo.');
+    return { synced: added };
   },
 
   // ─── Upload de mídia (prévia) para o canal de cache do fluxo ───────────────

@@ -6,6 +6,7 @@ export interface PixCreated {
   transactionId: string;
   qrCode: string;
   copyPaste: string;
+  qrCodeBase64?: string; // imagem PNG do QR (data URI), quando o gateway devolve
   amount: number;
   expiresAt: string;
 }
@@ -29,6 +30,7 @@ export async function createPix(apiKey: string, amountBRL: number, description: 
     transactionId: data.id,
     qrCode: data.qr_code,
     copyPaste: data.qr_code,
+    qrCodeBase64: data.qr_code_base64,
     amount: data.value,
     expiresAt: new Date(Date.now() + 3_600_000).toISOString(),
   };
