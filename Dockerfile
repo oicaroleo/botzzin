@@ -153,9 +153,9 @@ SCRIPT
 
 RUN chmod +x /app/entrypoint.sh
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=5 \
-  CMD curl -f http://localhost:8080/health || exit 1
+# Sem HEALTHCHECK no Dockerfile: a mesma imagem roda o serviço "server" (tudo-em-um,
+# com proxy no :8080) e o serviço "worker"/manager (sem porta nenhuma). O healthcheck
+# é configurado só no serviço server pelo painel do Railway (Healthcheck Path = /health).
 
-# Start
+# Start (modo definido pela env BOT_MODE: server | manager | worker)
 CMD ["/app/entrypoint.sh"]
