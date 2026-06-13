@@ -6,19 +6,19 @@ import { leadsAPI, botsAPI, flowAPI, downloadBlob } from '@/lib/api';
 // ── Mapa de eventos da timeline ──────────────────────────────────────────────
 const EVENT_META: Record<string, { label: string; color: string; icon: string }> = {
   started:         { label: 'Deu /start',            color: '#7878A0', icon: '▶' },
-  plan_selected:   { label: 'Escolheu o plano',      color: '#00E5FF', icon: '◉' },
-  pix_generated:   { label: 'Gerou o PIX',           color: '#00E5FF', icon: '⬡' },
-  paid:            { label: 'Pagamento confirmado',  color: '#BFFF00', icon: '✓' },
-  access_granted:  { label: 'Acesso liberado',       color: '#BFFF00', icon: '🔓' },
+  plan_selected:   { label: 'Escolheu o plano',      color: '#9293C9', icon: '◉' },
+  pix_generated:   { label: 'Gerou o PIX',           color: '#9293C9', icon: '⬡' },
+  paid:            { label: 'Pagamento confirmado',  color: '#6667AB', icon: '✓' },
+  access_granted:  { label: 'Acesso liberado',       color: '#6667AB', icon: '🔓' },
   renewal_offered: { label: 'Oferta de renovação',   color: '#FFB020', icon: '⏳' },
   access_expired:  { label: 'Acesso expirou',        color: '#FF8042', icon: '⌛' },
   removed:         { label: 'Removido do canal',     color: '#FF3B4E', icon: '⤬' },
   blocked:         { label: 'Bloqueou o bot',        color: '#FF3B4E', icon: '⛔' },
-  funnel_sent:     { label: 'Oferta de esteira',     color: '#00E5FF', icon: '✦' },
+  funnel_sent:     { label: 'Oferta de esteira',     color: '#9293C9', icon: '✦' },
 };
 
 const STATUS_BADGE: Record<string, { label: string; color: string; bg: string }> = {
-  convertido: { label: 'Convertido', color: '#BFFF00', bg: 'rgba(191,255,0,0.1)' },
+  convertido: { label: 'Convertido', color: '#6667AB', bg: 'rgba(102,103,171,0.1)' },
   pendente:   { label: 'Pendente',   color: '#7878A0', bg: 'rgba(255,255,255,0.05)' },
   bloqueado:  { label: 'Bloqueado',  color: '#FF3B4E', bg: 'rgba(255,59,78,0.1)' },
 };
@@ -40,8 +40,8 @@ function CopyChip({ text }: { text: string }) {
   return (
     <button onClick={() => { navigator.clipboard?.writeText(text); setDone(true); setTimeout(() => setDone(false), 1200); }}
       className="mono" title="Copiar"
-      style={{ background: 'rgba(0,229,255,0.06)', border: '1px solid rgba(0,229,255,0.2)', borderRadius: '6px',
-        color: done ? '#BFFF00' : '#00E5FF', cursor: 'pointer', fontSize: '11px', padding: '3px 8px', fontFamily: 'inherit',
+      style={{ background: 'rgba(146,147,201,0.06)', border: '1px solid rgba(146,147,201,0.2)', borderRadius: '6px',
+        color: done ? '#6667AB' : '#9293C9', cursor: 'pointer', fontSize: '11px', padding: '3px 8px', fontFamily: 'inherit',
         maxWidth: '220px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'inline-block', verticalAlign: 'middle' }}>
       {done ? '✓ copiado' : text}
     </button>
@@ -79,7 +79,7 @@ function LeadDrawer({ leadId, onClose }: { leadId: string; onClose: () => void }
   return (
     <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.55)', zIndex: 50, display: 'flex', justifyContent: 'flex-end' }}>
       <div onClick={e => e.stopPropagation()} style={{ width: '440px', maxWidth: '92vw', height: '100%', overflowY: 'auto',
-        background: '#0A0A18', borderLeft: '1px solid rgba(255,255,255,0.08)', padding: '24px' }}>
+        background: '#0C0C10', borderLeft: '1px solid rgba(255,255,255,0.08)', padding: '24px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
           <h2 style={{ fontSize: '17px', fontWeight: 800 }}>Detalhe do Lead</h2>
           <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#606080', fontSize: '22px', cursor: 'pointer' }}>×</button>
@@ -90,7 +90,7 @@ function LeadDrawer({ leadId, onClose }: { leadId: string; onClose: () => void }
             {/* Identidade */}
             <div className="card" style={{ padding: '16px', marginBottom: '16px' }}>
               <div style={{ fontSize: '15px', fontWeight: 700 }}>
-                {lead.firstName || 'Sem nome'} {lead.telegramUsername && <span style={{ color: '#00E5FF', fontWeight: 600 }}>@{lead.telegramUsername}</span>}
+                {lead.firstName || 'Sem nome'} {lead.telegramUsername && <span style={{ color: '#9293C9', fontWeight: 600 }}>@{lead.telegramUsername}</span>}
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginTop: '10px', fontSize: '12px', color: '#7878A0' }}>
                 <div>Telegram ID: <CopyChip text={lead.telegramUserId}/></div>
@@ -105,7 +105,7 @@ function LeadDrawer({ leadId, onClose }: { leadId: string; onClose: () => void }
               {lead.payments?.length ? lead.payments.map((p: any) => (
                 <div key={p.id} className="card" style={{ padding: '12px 14px', marginBottom: '8px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                    <span style={{ fontWeight: 700, fontSize: '14px', color: p.status === 'paid' ? '#BFFF00' : '#7878A0' }}>{fmtMoney(p.amount)}</span>
+                    <span style={{ fontWeight: 700, fontSize: '14px', color: p.status === 'paid' ? '#6667AB' : '#7878A0' }}>{fmtMoney(p.amount)}</span>
                     <span style={{ fontSize: '11px', color: '#505070' }}>{p.plan?.name} · {p.status}</span>
                   </div>
                   {p.endToEndId
@@ -147,13 +147,13 @@ function LeadDrawer({ leadId, onClose }: { leadId: string; onClose: () => void }
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
               <button onClick={resend} disabled={!!busy || !lead.paidAt} title={lead.paidAt ? '' : 'Sem pagamento confirmado'}
                 style={{ padding: '8px 12px', borderRadius: '7px', fontSize: '12px', fontWeight: 700, fontFamily: 'inherit',
-                  border: '1px solid rgba(191,255,0,0.25)', background: 'rgba(191,255,0,0.1)', color: lead.paidAt ? '#BFFF00' : '#404060',
+                  border: '1px solid rgba(102,103,171,0.25)', background: 'rgba(102,103,171,0.1)', color: lead.paidAt ? '#6667AB' : '#404060',
                   cursor: (busy || !lead.paidAt) ? 'not-allowed' : 'pointer' }}>
                 {busy === 'resend' ? 'Reenviando...' : '↗ Reenviar acesso'}
               </button>
               <button onClick={downloadPdf} disabled={!!busy}
                 style={{ padding: '8px 12px', borderRadius: '7px', fontSize: '12px', fontWeight: 700, fontFamily: 'inherit',
-                  border: '1px solid rgba(0,229,255,0.25)', background: 'rgba(0,229,255,0.08)', color: '#00E5FF', cursor: busy ? 'not-allowed' : 'pointer' }}>
+                  border: '1px solid rgba(146,147,201,0.25)', background: 'rgba(146,147,201,0.08)', color: '#9293C9', cursor: busy ? 'not-allowed' : 'pointer' }}>
                 {busy === 'pdf' ? 'Gerando...' : '⬇ Relatório (PDF)'}
               </button>
               <button disabled title="Em breve" style={{ padding: '8px 12px', borderRadius: '7px', fontSize: '12px', fontWeight: 600, fontFamily: 'inherit',
@@ -243,9 +243,9 @@ export default function LeadsPage() {
 
       {/* Totais */}
       <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginBottom: '20px' }}>
-        <StatCard label="TOTAL" value={summary.total} color="#EEEEF8"/>
-        <StatCard label="CONVERTIDOS" value={summary.converted} color="#BFFF00"/>
-        <StatCard label="PENDENTES" value={summary.pending} color="#00E5FF"/>
+        <StatCard label="TOTAL" value={summary.total} color="#F0EEE9"/>
+        <StatCard label="CONVERTIDOS" value={summary.converted} color="#6667AB"/>
+        <StatCard label="PENDENTES" value={summary.pending} color="#9293C9"/>
         <StatCard label="BLOQUEADOS" value={summary.blocked} color="#FF3B4E"/>
       </div>
 
@@ -296,7 +296,7 @@ export default function LeadsPage() {
               </div>
               <div style={{ color: '#7878A0', fontSize: '12px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>@{l.bot?.telegramUsername}</div>
               <div><span style={{ fontSize: '11px', fontWeight: 700, color: badge.color, background: badge.bg, padding: '3px 9px', borderRadius: '20px' }}>{badge.label}</span></div>
-              <div className="mono" style={{ fontSize: '12px', color: l.lastPayment ? '#BFFF00' : '#404060' }}>{l.lastPayment ? fmtMoney(l.lastPayment.amount) : '—'}</div>
+              <div className="mono" style={{ fontSize: '12px', color: l.lastPayment ? '#6667AB' : '#404060' }}>{l.lastPayment ? fmtMoney(l.lastPayment.amount) : '—'}</div>
               <div style={{ fontSize: '11px', color: '#505070' }}>{fmtDate(l.createdAt)}</div>
             </div>
           );

@@ -53,7 +53,7 @@ function ConfigTab({ bot, botId, onUpdate }: { bot: any; botId: string; onUpdate
           <SectionTitle>Token Telegram</SectionTitle>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
             <span className={`dot ${bot.status === 'active' ? 'dot-on' : 'dot-off'}`}/>
-            <span style={{ fontSize: '11px', fontWeight: 700, color: bot.status === 'active' ? '#BFFF00' : '#505070', letterSpacing: '0.06em' }}>
+            <span style={{ fontSize: '11px', fontWeight: 700, color: bot.status === 'active' ? '#6667AB' : '#505070', letterSpacing: '0.06em' }}>
               {bot.status === 'active' ? 'ATIVO' : 'PAUSADO'}
             </span>
           </div>
@@ -71,7 +71,7 @@ function ConfigTab({ bot, botId, onUpdate }: { bot: any; botId: string; onUpdate
         </div>
         <div style={{
           display: 'flex', alignItems: 'center', gap: '8px',
-          background: 'rgba(191,255,0,0.06)', border: '1px solid rgba(191,255,0,0.15)',
+          background: 'rgba(102,103,171,0.06)', border: '1px solid rgba(102,103,171,0.15)',
           borderRadius: '8px', padding: '10px 12px',
         }}>
           <span className="dot dot-on"/>
@@ -170,7 +170,7 @@ function LeadsTab({ botId }: { botId: string }) {
                     {lead.paidAt ? (
                       <span style={{
                         fontSize: '10px', fontWeight: 800, letterSpacing: '0.08em',
-                        background: 'rgba(191,255,0,0.1)', color: '#BFFF00',
+                        background: 'rgba(102,103,171,0.1)', color: '#6667AB',
                         padding: '3px 8px', borderRadius: '20px',
                       }}>PAGO</span>
                     ) : (
@@ -221,7 +221,7 @@ function MetricsTab({ botId }: { botId: string }) {
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
         <SectionTitle>Métricas — últimos 30 dias</SectionTitle>
         <Link href={`/dashboard/bots/${botId}/metrics`} style={{ textDecoration: 'none' }}>
-          <span style={{ fontSize: '12px', color: '#BFFF00', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '4px', opacity: 0.8 }}>
+          <span style={{ fontSize: '12px', color: '#6667AB', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '4px', opacity: 0.8 }}>
             Ver análise completa →
           </span>
         </Link>
@@ -230,7 +230,7 @@ function MetricsTab({ botId }: { botId: string }) {
         {stats.map(({ label, val, fmt }) => (
           <div key={label} className="card" style={{ padding: '20px' }}>
             <div className="label" style={{ marginBottom: '10px' }}>{label}</div>
-            <div className="mono" style={{ fontSize: '28px', fontWeight: 600, color: '#BFFF00', letterSpacing: '-0.5px' }}>
+            <div className="mono" style={{ fontSize: '28px', fontWeight: 600, color: '#6667AB', letterSpacing: '-0.5px' }}>
               {fmt(val)}
             </div>
           </div>
@@ -244,8 +244,8 @@ function MetricsTab({ botId }: { botId: string }) {
           <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
             {[
               { label: 'Iniciados',     val: data.statusBreakdown.started       ?? 0, col: '#505070' },
-              { label: 'PIX Gerados',   val: data.statusBreakdown.pix_generated ?? 0, col: '#00E5FF' },
-              { label: 'Pagos',         val: data.statusBreakdown.paid          ?? 0, col: '#BFFF00' },
+              { label: 'PIX Gerados',   val: data.statusBreakdown.pix_generated ?? 0, col: '#9293C9' },
+              { label: 'Pagos',         val: data.statusBreakdown.paid          ?? 0, col: '#6667AB' },
             ].map(({ label, val, col }) => (
               <div key={label} className="card" style={{ padding: '16px 20px', minWidth: '120px' }}>
                 <div className="label" style={{ marginBottom: '8px' }}>{label}</div>
@@ -273,13 +273,13 @@ function GatewayTab(_: { botId: string }) {
       <Link href="/dashboard/gateways" style={{ textDecoration: 'none' }}>
         <div className="card card-hover" style={{ padding: '22px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-            <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'rgba(191,255,0,0.1)', border: '1px solid rgba(191,255,0,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', color: '#BFFF00', fontWeight: 800 }}>$</div>
+            <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'rgba(102,103,171,0.1)', border: '1px solid rgba(102,103,171,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', color: '#6667AB', fontWeight: 800 }}>$</div>
             <div>
               <div style={{ fontWeight: 700 }}>Configurar Gateways PIX</div>
               <div style={{ fontSize: '12px', color: '#505070' }}>Fallback automático, A/B testing e inteligência da plataforma</div>
             </div>
           </div>
-          <span style={{ color: '#BFFF00', fontSize: '18px' }}>→</span>
+          <span style={{ color: '#6667AB', fontSize: '18px' }}>→</span>
         </div>
       </Link>
     </div>
@@ -324,7 +324,7 @@ export default function BotPage() {
       {/* Back + header */}
       <button onClick={() => router.push('/dashboard')}
         style={{ background: 'none', border: 'none', color: '#505070', cursor: 'pointer', fontSize: '12px', fontWeight: 600, letterSpacing: '0.05em', marginBottom: '20px', padding: 0, display: 'flex', alignItems: 'center', gap: '5px', fontFamily: 'inherit' }}
-        onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.color = '#BFFF00'; }}
+        onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.color = '#6667AB'; }}
         onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.color = '#505070'; }}>
         ← VOLTAR
       </button>
@@ -332,11 +332,11 @@ export default function BotPage() {
       <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '32px' }}>
         <div style={{
           width: '48px', height: '48px',
-          background: 'linear-gradient(135deg, rgba(191,255,0,0.2), rgba(0,229,255,0.06))',
-          border: '1px solid rgba(191,255,0,0.25)',
+          background: 'linear-gradient(135deg, rgba(102,103,171,0.2), rgba(146,147,201,0.06))',
+          border: '1px solid rgba(102,103,171,0.25)',
           borderRadius: '13px',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: '22px', fontWeight: 800, color: '#BFFF00',
+          fontSize: '22px', fontWeight: 800, color: '#6667AB',
           flexShrink: 0,
         }}>
           {(bot.telegramUsername || 'B').charAt(0).toUpperCase()}
@@ -355,7 +355,7 @@ export default function BotPage() {
       {/* Tabs */}
       <div style={{
         display: 'flex', gap: '2px', marginBottom: '28px',
-        background: '#0A0A18', padding: '4px', borderRadius: '10px',
+        background: '#0C0C10', padding: '4px', borderRadius: '10px',
         border: '1px solid rgba(255,255,255,0.05)',
         width: 'fit-content',
       }}>
@@ -365,7 +365,7 @@ export default function BotPage() {
               padding: '8px 16px', borderRadius: '7px', fontSize: '12px',
               fontWeight: 700, border: 'none', cursor: 'pointer', transition: 'all 0.15s',
               fontFamily: 'inherit', letterSpacing: '0.02em',
-              background: tab === t.id ? '#BFFF00' : 'transparent',
+              background: tab === t.id ? '#6667AB' : 'transparent',
               color: tab === t.id ? '#06060E' : '#505070',
             }}
             onMouseEnter={e => { if (tab !== t.id) (e.currentTarget as HTMLButtonElement).style.color = '#AAAACC'; }}

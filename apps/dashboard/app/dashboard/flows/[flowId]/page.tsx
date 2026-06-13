@@ -37,7 +37,7 @@ function Toggle({ on, onChange, label }: { on: boolean; onChange: (v: boolean) =
     <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
       <button onClick={() => onChange(!on)} style={{
         width: '38px', height: '20px', borderRadius: '10px', border: 'none', cursor: 'pointer',
-        background: on ? '#BFFF00' : 'rgba(255,255,255,0.08)', position: 'relative', transition: 'background 0.2s', flexShrink: 0,
+        background: on ? '#6667AB' : 'rgba(255,255,255,0.08)', position: 'relative', transition: 'background 0.2s', flexShrink: 0,
       }}>
         <div style={{
           position: 'absolute', top: '2px', left: on ? '19px' : '2px',
@@ -45,7 +45,7 @@ function Toggle({ on, onChange, label }: { on: boolean; onChange: (v: boolean) =
           background: on ? '#06060E' : '#404060', transition: 'left 0.2s',
         }}/>
       </button>
-      <span style={{ fontSize: '14px', fontWeight: 600, color: on ? '#EEEEF8' : '#606080' }}>{label}</span>
+      <span style={{ fontSize: '14px', fontWeight: 600, color: on ? '#F0EEE9' : '#606080' }}>{label}</span>
     </div>
   );
 }
@@ -66,7 +66,7 @@ function ChannelPicker({ channels, value, onChange, placeholder }: {
         <input className="inp mono" value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder || '-1001234567890'}/>
         {channels.length > 0 && (
           <button onClick={() => { setManual(false); onChange(''); }}
-            style={{ background: 'none', border: 'none', color: '#00E5FF', cursor: 'pointer', fontSize: '11px', fontWeight: 700, padding: '6px 0 0', fontFamily: 'inherit' }}>
+            style={{ background: 'none', border: 'none', color: '#9293C9', cursor: 'pointer', fontSize: '11px', fontWeight: 700, padding: '6px 0 0', fontFamily: 'inherit' }}>
             ← escolher canal detectado
           </button>
         )}
@@ -242,7 +242,7 @@ function PlanDelivery({ plan, flow, flowId, channels, onUpdate }: { plan: any; f
         background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', padding: 0,
         display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11px', fontWeight: 700, color: '#505070',
       }}>
-        <span style={{ color: useDef ? '#505070' : '#00E5FF' }}>
+        <span style={{ color: useDef ? '#505070' : '#9293C9' }}>
           {useDef ? `Entrega: padrão (${defLabel})` : `Entrega própria: ${DELIVERY_TYPES.find(d => d.value === type)?.label}`}
         </span>
         <span style={{ color: '#404060' }}>{open ? '▲' : '▼ editar'}</span>
@@ -285,7 +285,7 @@ function PlanRenewalRow({ plan, flowId, onUpdate }: { plan: any; flowId: string;
         style={{ width: '70px', padding: '5px 8px', fontSize: '12px' }}/>
       <span style={{ fontSize: '12px', color: '#505070' }}>%{saving ? ' · salvando...' : ''}</span>
       {(parseFloat(val) || 0) > 0 && (
-        <span style={{ fontSize: '11px', color: '#BFFF00', marginLeft: 'auto' }}>
+        <span style={{ fontSize: '11px', color: '#6667AB', marginLeft: 'auto' }}>
           Renovação: R$ {(plan.price * (1 - (parseFloat(val) || 0) / 100)).toFixed(2)}
         </span>
       )}
@@ -416,19 +416,19 @@ function PlanosTab({ flow, flowId, channels, onUpdate }: { flow: any; flowId: st
                   <div>
                     <div style={{ fontWeight: 700, fontSize: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                       {p.name}
-                      {p.isDefault && <span style={{ fontSize: '9px', background: 'rgba(191,255,0,0.1)', color: '#BFFF00', padding: '2px 6px', borderRadius: '3px', fontWeight: 800 }}>PADRÃO</span>}
+                      {p.isDefault && <span style={{ fontSize: '9px', background: 'rgba(102,103,171,0.1)', color: '#6667AB', padding: '2px 6px', borderRadius: '3px', fontWeight: 800 }}>PADRÃO</span>}
                     </div>
                     {p.description && <div style={{ fontSize: '12px', color: '#505070', marginTop: '1px' }}>{p.description}</div>}
                   </div>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
                   <div style={{ textAlign: 'right' }}>
-                    <div className="mono" style={{ color: '#BFFF00', fontWeight: 700, fontSize: '16px' }}>R$ {p.price.toFixed(2)}</div>
+                    <div className="mono" style={{ color: '#6667AB', fontWeight: 700, fontSize: '16px' }}>R$ {p.price.toFixed(2)}</div>
                     <div style={{ fontSize: '11px', color: '#404060' }}>{p.days} dias</div>
                   </div>
                   {!p.isDefault && (
                     <button onClick={() => setDefault(p.id)}
-                      style={{ fontSize: '11px', padding: '4px 8px', borderRadius: '5px', border: '1px solid rgba(191,255,0,0.2)', background: 'transparent', color: '#BFFF00', cursor: 'pointer', fontWeight: 700, fontFamily: 'inherit' }}>
+                      style={{ fontSize: '11px', padding: '4px 8px', borderRadius: '5px', border: '1px solid rgba(102,103,171,0.2)', background: 'transparent', color: '#6667AB', cursor: 'pointer', fontWeight: 700, fontFamily: 'inherit' }}>
                       padrão
                     </button>
                   )}
@@ -470,7 +470,7 @@ function DeliveryFields({ type, channel, value, onType, onChannel, onValue, chan
           {DELIVERY_TYPES.map(opt => (
             <button key={opt.value} onClick={() => onType(opt.value)} style={{
               padding: '8px 16px', borderRadius: '8px', border: 'none', cursor: 'pointer', fontSize: '13px', fontWeight: 700, fontFamily: 'inherit',
-              background: type === opt.value ? '#BFFF00' : 'rgba(255,255,255,0.05)',
+              background: type === opt.value ? '#6667AB' : 'rgba(255,255,255,0.05)',
               color: type === opt.value ? '#06060E' : '#606080', transition: 'all 0.15s',
             }}>{opt.label}</button>
           ))}
@@ -527,7 +527,7 @@ function DefaultDeliveryCard({ flow, flowId, channels, onUpdate }: { flow: any; 
     <div className="card" style={{ padding: '20px', marginBottom: '20px' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
         <h3 style={{ fontWeight: 700, fontSize: '14px' }}>Entregável padrão</h3>
-        {ok && <span style={{ fontSize: '11px', color: '#BFFF00', fontWeight: 700 }}>✓ salvo</span>}
+        {ok && <span style={{ fontSize: '11px', color: '#6667AB', fontWeight: 700 }}>✓ salvo</span>}
       </div>
       <p style={{ color: '#505070', fontSize: '12px', margin: '0 0 16px', lineHeight: 1.55 }}>
         Entrega <strong style={{ color: '#7878A0' }}>padrão</strong> do fluxo (canal/grupo, link ou mensagem).
@@ -552,7 +552,7 @@ function StatPill({ label, value, accent }: { label: string; value: string; acce
   return (
     <div className="card" style={{ padding: '16px 18px', flex: 1, minWidth: 0 }}>
       <div className="label" style={{ marginBottom: '8px' }}>{label}</div>
-      <div className="mono" style={{ fontSize: '22px', fontWeight: 700, letterSpacing: '-0.5px', color: accent ? '#BFFF00' : '#EEEEF8' }}>
+      <div className="mono" style={{ fontSize: '22px', fontWeight: 700, letterSpacing: '-0.5px', color: accent ? '#6667AB' : '#F0EEE9' }}>
         {value}
       </div>
     </div>
@@ -666,14 +666,14 @@ function BotsTab({ flow, flowId, channels, onUpdate, onReloadChannels }: { flow:
               return (
                 <div key={bot.id} className="card" style={{
                   padding: '14px 18px', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                  borderColor: inThisFlow ? 'rgba(191,255,0,0.2)' : 'rgba(255,255,255,0.06)',
+                  borderColor: inThisFlow ? 'rgba(102,103,171,0.2)' : 'rgba(255,255,255,0.06)',
                 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                     <div style={{
                       width: '32px', height: '32px', borderRadius: '8px', flexShrink: 0,
-                      background: inThisFlow ? 'rgba(191,255,0,0.12)' : 'rgba(255,255,255,0.04)',
+                      background: inThisFlow ? 'rgba(102,103,171,0.12)' : 'rgba(255,255,255,0.04)',
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      fontSize: '13px', fontWeight: 800, color: inThisFlow ? '#BFFF00' : '#606080',
+                      fontSize: '13px', fontWeight: 800, color: inThisFlow ? '#6667AB' : '#606080',
                     }}>{(bot.telegramUsername || 'B').charAt(0).toUpperCase()}</div>
                     <div>
                       <div style={{ fontWeight: 700, fontSize: '13px' }}>@{bot.telegramUsername}</div>
@@ -682,8 +682,8 @@ function BotsTab({ flow, flowId, channels, onUpdate, onReloadChannels }: { flow:
                   </div>
                   <button onClick={() => inThisFlow ? remove(bot.id) : assign(bot.id)} style={{
                     padding: '7px 14px', borderRadius: '7px', fontSize: '12px', fontWeight: 700, border: 'none', cursor: 'pointer', fontFamily: 'inherit',
-                    background: inThisFlow ? 'rgba(255,59,78,0.1)' : 'rgba(191,255,0,0.1)',
-                    color: inThisFlow ? '#FF3B4E' : '#BFFF00',
+                    background: inThisFlow ? 'rgba(255,59,78,0.1)' : 'rgba(102,103,171,0.1)',
+                    color: inThisFlow ? '#FF3B4E' : '#6667AB',
                   }}>
                     {inThisFlow ? 'Remover' : 'Adicionar'}
                   </button>
@@ -705,12 +705,12 @@ function BotsTab({ flow, flowId, channels, onUpdate, onReloadChannels }: { flow:
         </p>
 
         {/* Painel de sincronização */}
-        <div style={{ background: 'rgba(0,229,255,0.04)', border: '1px solid rgba(0,229,255,0.12)', borderRadius: '10px', padding: '14px', marginBottom: '16px' }}>
+        <div style={{ background: 'rgba(146,147,201,0.04)', border: '1px solid rgba(146,147,201,0.12)', borderRadius: '10px', padding: '14px', marginBottom: '16px' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
-            <span style={{ fontSize: '12px', fontWeight: 700, color: '#00E5FF', letterSpacing: '0.05em' }}>CANAIS DETECTADOS ({channels.length})</span>
+            <span style={{ fontSize: '12px', fontWeight: 700, color: '#9293C9', letterSpacing: '0.05em' }}>CANAIS DETECTADOS ({channels.length})</span>
             <button onClick={handleReloadChannels} disabled={reloading} style={{
-              background: 'none', border: '1px solid rgba(0,229,255,0.25)', borderRadius: '6px',
-              color: reloading ? '#404060' : '#00E5FF', cursor: reloading ? 'default' : 'pointer',
+              background: 'none', border: '1px solid rgba(146,147,201,0.25)', borderRadius: '6px',
+              color: reloading ? '#404060' : '#9293C9', cursor: reloading ? 'default' : 'pointer',
               fontSize: '11px', fontWeight: 700, padding: '4px 10px', fontFamily: 'inherit',
             }}>
               {reloading ? 'Recarregando...' : 'Recarregar'}
@@ -726,9 +726,9 @@ function BotsTab({ flow, flowId, channels, onUpdate, onReloadChannels }: { flow:
               onKeyDown={e => { if (e.key === 'Enter') handleSyncChannel(); }}
             />
             <button onClick={handleSyncChannel} disabled={syncing || !syncInput.trim()} style={{
-              background: syncing || !syncInput.trim() ? 'rgba(0,229,255,0.05)' : 'rgba(0,229,255,0.15)',
-              border: '1px solid rgba(0,229,255,0.25)', borderRadius: '7px',
-              color: syncing || !syncInput.trim() ? '#404060' : '#00E5FF',
+              background: syncing || !syncInput.trim() ? 'rgba(146,147,201,0.05)' : 'rgba(146,147,201,0.15)',
+              border: '1px solid rgba(146,147,201,0.25)', borderRadius: '7px',
+              color: syncing || !syncInput.trim() ? '#404060' : '#9293C9',
               cursor: syncing || !syncInput.trim() ? 'default' : 'pointer',
               fontSize: '12px', fontWeight: 700, padding: '8px 14px', fontFamily: 'inherit', whiteSpace: 'nowrap',
             }}>
@@ -738,7 +738,7 @@ function BotsTab({ flow, flowId, channels, onUpdate, onReloadChannels }: { flow:
           {syncNotice && (
             <div style={{
               marginTop: '8px', fontSize: '12px', fontWeight: 600,
-              color: syncNotice.type === 'ok' ? '#BFFF00' : '#FF3B4E',
+              color: syncNotice.type === 'ok' ? '#6667AB' : '#FF3B4E',
             }}>{syncNotice.type === 'ok' ? '✓ ' : '✗ '}{syncNotice.text}</div>
           )}
         </div>
@@ -754,7 +754,7 @@ function BotsTab({ flow, flowId, channels, onUpdate, onReloadChannels }: { flow:
       {/* Redirecionador + distribuição */}
       <div className="card" style={{ padding: '20px' }}>
         <h3 style={{ fontWeight: 700, fontSize: '14px', marginBottom: '4px' }}>
-          Link redirecionador <span style={{ fontSize: '10px', fontWeight: 800, color: '#00E5FF', background: 'rgba(0,229,255,0.1)', padding: '2px 7px', borderRadius: '20px', marginLeft: '6px' }}>BETA</span>
+          Link redirecionador <span style={{ fontSize: '10px', fontWeight: 800, color: '#9293C9', background: 'rgba(146,147,201,0.1)', padding: '2px 7px', borderRadius: '20px', marginLeft: '6px' }}>BETA</span>
         </h3>
         <p style={{ fontSize: '12px', color: '#505070', margin: '6px 0 16px', lineHeight: 1.55 }}>
           Em vez de divulgar <span className="mono" style={{ color: '#606080' }}>t.me/seubot</span>, compartilhe um link redirecionador
@@ -777,10 +777,10 @@ function BotsTab({ flow, flowId, channels, onUpdate, onReloadChannels }: { flow:
         </div>
 
         <div style={{
-          background: 'rgba(0,229,255,0.04)', border: '1px solid rgba(0,229,255,0.12)', borderRadius: '8px',
+          background: 'rgba(146,147,201,0.04)', border: '1px solid rgba(146,147,201,0.12)', borderRadius: '8px',
           padding: '10px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px',
         }}>
-          <span className="mono" style={{ fontSize: '13px', color: '#00E5FF', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          <span className="mono" style={{ fontSize: '13px', color: '#9293C9', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
             {redirectUrl}
           </span>
           <button
@@ -789,8 +789,8 @@ function BotsTab({ flow, flowId, channels, onUpdate, onReloadChannels }: { flow:
             style={{
               fontSize: '11px', fontWeight: 700, padding: '5px 10px', borderRadius: '6px', border: 'none',
               cursor: slug.trim() ? 'pointer' : 'not-allowed', flexShrink: 0, fontFamily: 'inherit',
-              background: slug.trim() ? 'rgba(0,229,255,0.12)' : 'rgba(255,255,255,0.04)',
-              color: slug.trim() ? '#00E5FF' : '#404060',
+              background: slug.trim() ? 'rgba(146,147,201,0.12)' : 'rgba(255,255,255,0.04)',
+              color: slug.trim() ? '#9293C9' : '#404060',
             }}>Copiar</button>
         </div>
       </div>
@@ -815,12 +815,12 @@ function StepDelivery({ delType, delChan, delVal, set, globalLabel, channels = [
       <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: delType ? '10px' : 0 }}>
         <button onClick={() => set({ delType: '' })} style={{
           padding: '7px 13px', borderRadius: '8px', border: 'none', cursor: 'pointer', fontSize: '12px', fontWeight: 700, fontFamily: 'inherit',
-          background: delType === '' ? '#BFFF00' : 'rgba(255,255,255,0.05)', color: delType === '' ? '#06060E' : '#606080',
+          background: delType === '' ? '#6667AB' : 'rgba(255,255,255,0.05)', color: delType === '' ? '#06060E' : '#606080',
         }}>{globalLabel}</button>
         {DELIVERY_TYPES.map(opt => (
           <button key={opt.value} onClick={() => set({ delType: opt.value })} style={{
             padding: '7px 13px', borderRadius: '8px', border: 'none', cursor: 'pointer', fontSize: '12px', fontWeight: 700, fontFamily: 'inherit',
-            background: delType === opt.value ? '#BFFF00' : 'rgba(255,255,255,0.05)', color: delType === opt.value ? '#06060E' : '#606080',
+            background: delType === opt.value ? '#6667AB' : 'rgba(255,255,255,0.05)', color: delType === opt.value ? '#06060E' : '#606080',
           }}>{opt.label}</button>
         ))}
       </div>
@@ -894,9 +894,9 @@ function StepCard({ step, idx, plans, flowId, channels, onUpdate }: {
   };
 
   return (
-    <div className="card" style={{ padding: '18px', borderColor: 'rgba(0,229,255,0.12)' }}>
+    <div className="card" style={{ padding: '18px', borderColor: 'rgba(146,147,201,0.12)' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
-        <span className="label" style={{ color: '#00E5FF' }}>SEQUÊNCIA {idx + 1}</span>
+        <span className="label" style={{ color: '#9293C9' }}>SEQUÊNCIA {idx + 1}</span>
         <button onClick={del} style={{ background: 'none', border: 'none', color: '#404060', cursor: 'pointer', fontSize: '18px', padding: '0 4px' }}
           onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.color = '#FF3B4E'; }}
           onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.color = '#404060'; }}>×</button>
@@ -913,7 +913,7 @@ function StepCard({ step, idx, plans, flowId, channels, onUpdate }: {
               {[['immediate','Imediato'],['delay','Com delay']].map(([v,l]) => (
                 <button key={v} onClick={() => setTiming(v)} style={{
                   padding: '7px 12px', borderRadius: '8px', border: 'none', cursor: 'pointer', fontSize: '12px', fontWeight: 700, fontFamily: 'inherit',
-                  background: timing === v ? '#BFFF00' : 'rgba(255,255,255,0.05)', color: timing === v ? '#06060E' : '#606080',
+                  background: timing === v ? '#6667AB' : 'rgba(255,255,255,0.05)', color: timing === v ? '#06060E' : '#606080',
                 }}>{l}</button>
               ))}
             </div>
@@ -953,17 +953,17 @@ function StepCard({ step, idx, plans, flowId, channels, onUpdate }: {
                 return (
                   <label key={p.id} style={{
                     display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', padding: '9px 12px', borderRadius: '8px',
-                    border: `1px solid ${on ? 'rgba(191,255,0,0.25)' : 'rgba(255,255,255,0.06)'}`, background: on ? 'rgba(191,255,0,0.05)' : 'transparent',
+                    border: `1px solid ${on ? 'rgba(102,103,171,0.25)' : 'rgba(255,255,255,0.06)'}`, background: on ? 'rgba(102,103,171,0.05)' : 'transparent',
                   }}>
-                    <input type="checkbox" checked={on} onChange={() => togglePlan(p.id)} style={{ accentColor: '#BFFF00', width: '16px', height: '16px', cursor: 'pointer' }}/>
-                    <span style={{ fontSize: '13px', color: '#EEEEF8', flex: 1 }}>{p.emoji} {p.name}</span>
+                    <input type="checkbox" checked={on} onChange={() => togglePlan(p.id)} style={{ accentColor: '#6667AB', width: '16px', height: '16px', cursor: 'pointer' }}/>
+                    <span style={{ fontSize: '13px', color: '#F0EEE9', flex: 1 }}>{p.emoji} {p.name}</span>
                     {discVal ? (
                       <span className="mono" style={{ fontSize: '12px' }}>
                         <span style={{ color: '#404060', textDecoration: 'line-through', marginRight: '6px' }}>R$ {p.price.toFixed(2)}</span>
-                        <span style={{ color: '#BFFF00' }}>R$ {dp.toFixed(2)}</span>
+                        <span style={{ color: '#6667AB' }}>R$ {dp.toFixed(2)}</span>
                       </span>
                     ) : (
-                      <span className="mono" style={{ fontSize: '12px', color: '#BFFF00' }}>R$ {p.price.toFixed(2)}</span>
+                      <span className="mono" style={{ fontSize: '12px', color: '#6667AB' }}>R$ {p.price.toFixed(2)}</span>
                     )}
                   </label>
                 );
@@ -1085,12 +1085,12 @@ function FunnelEditor({ flow, flowId, kind, channels, onUpdate }: {
               <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: delType ? '10px' : 0 }}>
                 <button onClick={() => setDelType('')} style={{
                   padding: '7px 13px', borderRadius: '8px', border: 'none', cursor: 'pointer', fontSize: '12px', fontWeight: 700, fontFamily: 'inherit',
-                  background: delType === '' ? '#BFFF00' : 'rgba(255,255,255,0.05)', color: delType === '' ? '#06060E' : '#606080',
+                  background: delType === '' ? '#6667AB' : 'rgba(255,255,255,0.05)', color: delType === '' ? '#06060E' : '#606080',
                 }}>Mesma do fluxo principal</button>
                 {DELIVERY_TYPES.map(opt => (
                   <button key={opt.value} onClick={() => setDelType(opt.value)} style={{
                     padding: '7px 13px', borderRadius: '8px', border: 'none', cursor: 'pointer', fontSize: '12px', fontWeight: 700, fontFamily: 'inherit',
-                    background: delType === opt.value ? '#BFFF00' : 'rgba(255,255,255,0.05)', color: delType === opt.value ? '#06060E' : '#606080',
+                    background: delType === opt.value ? '#6667AB' : 'rgba(255,255,255,0.05)', color: delType === opt.value ? '#06060E' : '#606080',
                   }}>{opt.label}</button>
                 ))}
               </div>
@@ -1183,8 +1183,8 @@ function MediaSlots({ flowId, fileIds, onChange }: {
       <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
         {items.map((m, i) => (
           <div key={i} style={{
-            width: '64px', height: '64px', borderRadius: '8px', border: '1px solid rgba(191,255,0,0.3)', position: 'relative',
-            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: '#BFFF00', fontSize: '22px',
+            width: '64px', height: '64px', borderRadius: '8px', border: '1px solid rgba(102,103,171,0.3)', position: 'relative',
+            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: '#6667AB', fontSize: '22px',
           }} title={m.fileId}>
             {mediaIcon(m.type)}<span style={{ fontSize: '8px', color: '#7878A0' }}>{m.type}</span>
             <button onClick={() => remove(i)} style={{
@@ -1256,7 +1256,7 @@ function OrderBumpCard({ ctx, bump, plans, flowId, channels, onUpdate }: {
     <div className="card" style={{ padding: '20px' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
         <Toggle on={enabled} onChange={setEnabled} label={ctx.label}/>
-        {ok && <span style={{ fontSize: '11px', color: '#BFFF00', fontWeight: 700 }}>✓ salvo</span>}
+        {ok && <span style={{ fontSize: '11px', color: '#6667AB', fontWeight: 700 }}>✓ salvo</span>}
       </div>
       <p style={{ fontSize: '11px', color: '#404060', margin: '0 0 14px' }}>{ctx.hint} — exibido antes de gerar o PIX.</p>
 
@@ -1298,12 +1298,12 @@ function OrderBumpCard({ ctx, bump, plans, flowId, channels, onUpdate }: {
             <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: delType ? '12px' : 0 }}>
               <button onClick={() => setDelType('')} style={{
                 padding: '8px 16px', borderRadius: '8px', border: 'none', cursor: 'pointer', fontSize: '13px', fontWeight: 700, fontFamily: 'inherit',
-                background: delType === '' ? '#BFFF00' : 'rgba(255,255,255,0.05)', color: delType === '' ? '#06060E' : '#606080',
+                background: delType === '' ? '#6667AB' : 'rgba(255,255,255,0.05)', color: delType === '' ? '#06060E' : '#606080',
               }}>Mesmo do fluxo principal</button>
               {DELIVERY_TYPES.map(opt => (
                 <button key={opt.value} onClick={() => setDelType(opt.value)} style={{
                   padding: '8px 16px', borderRadius: '8px', border: 'none', cursor: 'pointer', fontSize: '13px', fontWeight: 700, fontFamily: 'inherit',
-                  background: delType === opt.value ? '#BFFF00' : 'rgba(255,255,255,0.05)', color: delType === opt.value ? '#06060E' : '#606080',
+                  background: delType === opt.value ? '#6667AB' : 'rgba(255,255,255,0.05)', color: delType === opt.value ? '#06060E' : '#606080',
                 }}>{opt.label}</button>
               ))}
             </div>
@@ -1348,8 +1348,8 @@ function ExtrasTab({ flow, flowId, channels, onUpdate }: { flow: any; flowId: st
   };
 
   const ckbox = (on: boolean, set: (v: boolean) => void, label: string) => (
-    <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '13px', color: on ? '#EEEEF8' : '#7878A0' }}>
-      <input type="checkbox" checked={on} onChange={e => set(e.target.checked)} style={{ accentColor: '#BFFF00', width: '16px', height: '16px', cursor: 'pointer' }}/>
+    <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '13px', color: on ? '#F0EEE9' : '#7878A0' }}>
+      <input type="checkbox" checked={on} onChange={e => set(e.target.checked)} style={{ accentColor: '#6667AB', width: '16px', height: '16px', cursor: 'pointer' }}/>
       {label}
     </label>
   );
@@ -1365,7 +1365,7 @@ function ExtrasTab({ flow, flowId, channels, onUpdate }: { flow: any; flowId: st
       <div className="card" style={{ padding: '20px' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
           <h3 style={{ fontWeight: 700, fontSize: '14px' }}>Aplicar Order Bump Inicial também em</h3>
-          {ok && <span style={{ fontSize: '11px', color: '#BFFF00', fontWeight: 700 }}>✓ salvo</span>}
+          {ok && <span style={{ fontSize: '11px', color: '#6667AB', fontWeight: 700 }}>✓ salvo</span>}
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
           {ckbox(applyUp,   setApplyUp,   'Upsell')}
@@ -1481,7 +1481,7 @@ function PaymentsTab({ flow, flowId, onUpdate }: { flow: any; flowId: string; on
 
   const pillBtn = (active: boolean): React.CSSProperties => ({
     padding: '6px 12px', borderRadius: '7px', border: 'none', cursor: 'pointer', fontSize: '12px', fontWeight: 700, fontFamily: 'inherit',
-    background: active ? 'rgba(0,229,255,0.14)' : 'transparent', color: active ? '#00E5FF' : '#505070', transition: 'all 0.15s',
+    background: active ? 'rgba(146,147,201,0.14)' : 'transparent', color: active ? '#9293C9' : '#505070', transition: 'all 0.15s',
   });
 
   // Bubble do preview
@@ -1528,7 +1528,7 @@ function PaymentsTab({ flow, flowId, onUpdate }: { flow: any; flowId: string; on
             {/* Confirmação do plano */}
             <div className="card" style={{ padding: '14px 18px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <div>
-                <div style={{ fontSize: '13px', fontWeight: 600, color: '#EEEEF8' }}>Confirmação do plano</div>
+                <div style={{ fontSize: '13px', fontWeight: 600, color: '#F0EEE9' }}>Confirmação do plano</div>
                 <div style={{ fontSize: '11px', color: '#404060' }}>Mostra os detalhes antes de gerar o PIX</div>
               </div>
               <Toggle on={cfg.confirmPlan} onChange={toggleConfirm} label=""/>
@@ -1537,7 +1537,7 @@ function PaymentsTab({ flow, flowId, onUpdate }: { flow: any; flowId: string; on
             {/* Texto do PIX */}
             <div className="card" style={{ padding: '18px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
-                <span style={{ fontSize: '13px', fontWeight: 600, color: '#EEEEF8' }}>Texto do PIX</span>
+                <span style={{ fontSize: '13px', fontWeight: 600, color: '#F0EEE9' }}>Texto do PIX</span>
               </div>
 
               {/* mídias próprias do PIX (branding) — até 3 */}
@@ -1563,8 +1563,8 @@ function PaymentsTab({ flow, flowId, onUpdate }: { flow: any; flowId: string; on
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px' }}>
                   {PIX_VARS.map(v => (
                     <button key={v} onClick={() => insertAtCursor(v)} className="mono"
-                      style={{ fontSize: '10px', padding: '3px 8px', borderRadius: '20px', border: '1px solid rgba(0,229,255,0.2)',
-                        background: 'rgba(0,229,255,0.06)', color: '#00E5FF', cursor: 'pointer', fontFamily: 'inherit' }}>{v}</button>
+                      style={{ fontSize: '10px', padding: '3px 8px', borderRadius: '20px', border: '1px solid rgba(146,147,201,0.2)',
+                        background: 'rgba(146,147,201,0.06)', color: '#9293C9', cursor: 'pointer', fontFamily: 'inherit' }}>{v}</button>
                   ))}
                 </div>
                 <span style={{ fontSize: '10px', color: '#404060' }}>{cfg.pixText.length}/4000</span>
@@ -1573,12 +1573,12 @@ function PaymentsTab({ flow, flowId, onUpdate }: { flow: any; flowId: string; on
 
             {/* Botões & CTA */}
             <div className="card" style={{ padding: '18px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              <span style={{ fontSize: '13px', fontWeight: 600, color: '#EEEEF8' }}>Botões & CTA</span>
+              <span style={{ fontSize: '13px', fontWeight: 600, color: '#F0EEE9' }}>Botões & CTA</span>
               <div><Label>MENSAGEM ANTES DOS BOTÕES</Label>
                 <input className="inp" value={cfg.buttonsBeforeMsg} onChange={e => set({ buttonsBeforeMsg: e.target.value })}/></div>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <div>
-                  <div style={{ fontSize: '12px', fontWeight: 600, color: '#EEEEF8' }}>Código PIX na mesma mensagem</div>
+                  <div style={{ fontSize: '12px', fontWeight: 600, color: '#F0EEE9' }}>Código PIX na mesma mensagem</div>
                   <div style={{ fontSize: '11px', color: '#404060' }}>Se off, o PIX vai em mensagem separada</div>
                 </div>
                 <Toggle on={cfg.pixSameMessage} onChange={v => set({ pixSameMessage: v })} label=""/>
@@ -1594,14 +1594,14 @@ function PaymentsTab({ flow, flowId, onUpdate }: { flow: any; flowId: string; on
             {/* Prova social + Config PIX */}
             <div className="card" style={{ padding: '14px 18px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <div>
-                <div style={{ fontSize: '13px', fontWeight: 600, color: '#EEEEF8' }}>Prova social</div>
+                <div style={{ fontSize: '13px', fontWeight: 600, color: '#F0EEE9' }}>Prova social</div>
                 <div style={{ fontSize: '11px', color: '#404060' }}>Mensagem aleatória após PIX gerado</div>
               </div>
               <Toggle on={cfg.socialProof} onChange={v => set({ socialProof: v })} label=""/>
             </div>
 
             <div className="card" style={{ padding: '18px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              <span style={{ fontSize: '13px', fontWeight: 600, color: '#EEEEF8' }}>Configurações do PIX</span>
+              <span style={{ fontSize: '13px', fontWeight: 600, color: '#F0EEE9' }}>Configurações do PIX</span>
               <div><Label>EXIBIÇÃO DO QR CODE</Label>
                 <select className="inp" value={cfg.qrDisplay} onChange={e => set({ qrDisplay: e.target.value as PayCfg['qrDisplay'] })} style={{ fontFamily: 'inherit', cursor: 'pointer' }}>
                   <option value="message">Na mensagem (imagem enviada junto)</option>
@@ -1627,7 +1627,7 @@ function PaymentsTab({ flow, flowId, onUpdate }: { flow: any; flowId: string; on
         <div className="label" style={{ marginBottom: '8px' }}>PREVIEW DO TELEGRAM</div>
         <div style={{ borderRadius: '14px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.08)', background: '#0e1621' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '11px 14px', background: '#1a2332', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-            <div style={{ width: '30px', height: '30px', borderRadius: '50%', background: 'linear-gradient(135deg,#00E5FF,#BFFF00)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: 800, color: '#06060E' }}>S</div>
+            <div style={{ width: '30px', height: '30px', borderRadius: '50%', background: 'linear-gradient(135deg,#9293C9,#6667AB)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: 800, color: '#06060E' }}>S</div>
             <div><div style={{ fontSize: '12px', color: '#fff', fontWeight: 600 }}>Seu Bot</div><div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)' }}>bot</div></div>
           </div>
           <div style={{ padding: '12px', minHeight: '260px' }}>
@@ -1649,7 +1649,7 @@ function PaymentsTab({ flow, flowId, onUpdate }: { flow: any; flowId: string; on
                 <Bubble><span dangerouslySetInnerHTML={{ __html: renderTg(cfg.pixText) }} /></Bubble>
                 {!cfg.pixSameMessage && <Bubble>{cfg.beforeCodeMsg}</Bubble>}
                 <Bubble>
-                  <span className="mono" style={{ fontSize: '10px', color: cfg.pixFormat === 'mono' ? '#BFFF00' : 'rgba(255,255,255,0.75)', wordBreak: 'break-all' }}>
+                  <span className="mono" style={{ fontSize: '10px', color: cfg.pixFormat === 'mono' ? '#6667AB' : 'rgba(255,255,255,0.75)', wordBreak: 'break-all' }}>
                     00020101021226940014br.gov.bcb.pix2572qrcode.exemplo…5204000053039865802BR
                   </span>
                 </Bubble>
@@ -1704,7 +1704,7 @@ export default function FlowDetailPage() {
     <div className="fade-up">
       <button onClick={() => router.push('/dashboard/flows')}
         style={{ background: 'none', border: 'none', color: '#505070', cursor: 'pointer', fontSize: '12px', fontWeight: 600, letterSpacing: '0.05em', marginBottom: '20px', padding: 0, fontFamily: 'inherit' }}
-        onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.color = '#BFFF00'; }}
+        onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.color = '#6667AB'; }}
         onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.color = '#505070'; }}>
         ← VOLTAR
       </button>
@@ -1714,8 +1714,8 @@ export default function FlowDetailPage() {
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <span style={{
             fontSize: '10px', fontWeight: 800, padding: '3px 8px', borderRadius: '20px',
-            background: flow.isActive ? 'rgba(191,255,0,0.1)' : 'rgba(255,255,255,0.04)',
-            color: flow.isActive ? '#BFFF00' : '#505070',
+            background: flow.isActive ? 'rgba(102,103,171,0.1)' : 'rgba(255,255,255,0.04)',
+            color: flow.isActive ? '#6667AB' : '#505070',
           }}>{flow.isActive ? 'ATIVO' : 'PAUSADO'}</span>
           <span style={{ fontSize: '12px', color: '#404060' }}>
             {flow.bots?.length || 0} bot(s) · {flow.plans?.length || 0} plano(s)
@@ -1726,14 +1726,14 @@ export default function FlowDetailPage() {
       {/* Tabs */}
       <div style={{
         display: 'flex', gap: '2px', marginBottom: '28px', flexWrap: 'wrap',
-        background: '#0A0A18', padding: '4px', borderRadius: '10px',
+        background: '#0C0C10', padding: '4px', borderRadius: '10px',
         border: '1px solid rgba(255,255,255,0.05)', width: 'fit-content',
       }}>
         {TABS.map(t => (
           <button key={t.id} onClick={() => setTab(t.id)} style={{
             padding: '8px 14px', borderRadius: '7px', fontSize: '12px', fontWeight: 700,
             border: 'none', cursor: 'pointer', fontFamily: 'inherit',
-            background: tab === t.id ? '#BFFF00' : 'transparent',
+            background: tab === t.id ? '#6667AB' : 'transparent',
             color: tab === t.id ? '#06060E' : '#505070',
             transition: 'all 0.15s',
           }}>

@@ -43,7 +43,7 @@ export default function Sidebar() {
 
   return (
     <aside style={{
-      background: '#0A0A18',
+      background: '#0C0C10',
       borderRight: '1px solid rgba(255,255,255,0.05)',
       display: 'flex',
       flexDirection: 'column',
@@ -56,7 +56,7 @@ export default function Sidebar() {
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <div style={{
             width: '32px', height: '32px',
-            background: '#BFFF00',
+            background: '#6667AB',
             borderRadius: '8px',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             fontWeight: 800, fontSize: '16px', color: '#06060E',
@@ -82,11 +82,11 @@ export default function Sidebar() {
               <div style={{
                 display: 'flex', alignItems: 'center', gap: '9px',
                 padding: '9px 12px', borderRadius: '9px',
-                background: active ? 'rgba(191,255,0,0.1)' : 'transparent',
-                color: active ? '#BFFF00' : '#606080',
+                background: active ? 'rgba(102,103,171,0.1)' : 'transparent',
+                color: active ? '#6667AB' : '#606080',
                 fontSize: '13px', fontWeight: active ? 700 : 500,
                 transition: 'all 0.15s',
-                borderLeft: active ? '2px solid #BFFF00' : '2px solid transparent',
+                borderLeft: active ? '2px solid #6667AB' : '2px solid transparent',
               }}
               onMouseEnter={e => {
                 if (!active) {
@@ -105,8 +105,8 @@ export default function Sidebar() {
                 {active && (
                   <span style={{
                     marginLeft: 'auto', width: '4px', height: '4px',
-                    borderRadius: '50%', background: '#BFFF00',
-                    boxShadow: '0 0 6px #BFFF00',
+                    borderRadius: '50%', background: '#6667AB',
+                    boxShadow: '0 0 6px #6667AB',
                   }}/>
                 )}
               </div>
@@ -124,10 +124,10 @@ export default function Sidebar() {
         }}>
           <div style={{
             width: '28px', height: '28px', borderRadius: '50%',
-            background: 'linear-gradient(135deg, rgba(191,255,0,0.2), rgba(0,229,255,0.1))',
-            border: '1px solid rgba(191,255,0,0.2)',
+            background: 'linear-gradient(135deg, rgba(102,103,171,0.2), rgba(146,147,201,0.1))',
+            border: '1px solid rgba(102,103,171,0.2)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: '12px', fontWeight: 800, color: '#BFFF00', flexShrink: 0,
+            fontSize: '12px', fontWeight: 800, color: '#6667AB', flexShrink: 0,
           }}>{initial}</div>
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ fontSize: '12px', fontWeight: 700, lineHeight: 1.2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>

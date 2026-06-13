@@ -120,8 +120,8 @@ export default function BotMetricsPage() {
                 style={{
                   padding: '6px 14px', borderRadius: '7px', border: 'none', cursor: 'pointer',
                   fontSize: '12px', fontWeight: 700,
-                  background: days === opt.value ? 'rgba(191,255,0,0.12)' : 'transparent',
-                  color: days === opt.value ? '#BFFF00' : '#505070',
+                  background: days === opt.value ? 'rgba(102,103,171,0.12)' : 'transparent',
+                  color: days === opt.value ? '#6667AB' : '#505070',
                   transition: 'all 0.15s',
                 }}
               >{opt.label}</button>
@@ -153,7 +153,7 @@ export default function BotMetricsPage() {
                 <div className="label" style={{ marginBottom: '12px' }}>{label}</div>
                 <div className="mono" style={{
                   fontSize: '30px', fontWeight: 700, lineHeight: 1, letterSpacing: '-1px',
-                  color: accent ? '#BFFF00' : '#EEEEF8',
+                  color: accent ? '#6667AB' : '#F0EEE9',
                 }}>
                   {value}
                 </div>
@@ -185,7 +185,7 @@ export default function BotMetricsPage() {
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
                 <div>
                   <div className="label">RECEITA POR DIA</div>
-                  <div className="mono" style={{ fontSize: '18px', fontWeight: 700, color: '#EEEEF8', marginTop: '4px' }}>
+                  <div className="mono" style={{ fontSize: '18px', fontWeight: 700, color: '#F0EEE9', marginTop: '4px' }}>
                     {fmt(revenue.reduce((s, d) => s + d.amount, 0))}
                   </div>
                 </div>
@@ -195,8 +195,8 @@ export default function BotMetricsPage() {
                 <AreaChart data={revenue} margin={{ top: 4, right: 0, left: 0, bottom: 0 }}>
                   <defs>
                     <linearGradient id="revGrad2" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#BFFF00" stopOpacity={0.25} />
-                      <stop offset="100%" stopColor="#BFFF00" stopOpacity={0} />
+                      <stop offset="0%" stopColor="#6667AB" stopOpacity={0.25} />
+                      <stop offset="100%" stopColor="#6667AB" stopOpacity={0} />
                     </linearGradient>
                   </defs>
                   <CartesianGrid stroke="rgba(255,255,255,0.04)" vertical={false} />
@@ -207,12 +207,12 @@ export default function BotMetricsPage() {
                   />
                   <YAxis hide />
                   <Tooltip
-                    contentStyle={{ background: '#0D0D1C', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', fontSize: '12px', color: '#EEEEF8' }}
+                    contentStyle={{ background: '#0D0D1C', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', fontSize: '12px', color: '#F0EEE9' }}
                     labelFormatter={(v: unknown) => shortDate(String(v))}
                     formatter={(v: unknown) => [fmt(Number(v)), 'Receita']}
                   />
-                  <Area type="monotone" dataKey="amount" stroke="#BFFF00" strokeWidth={2} fill="url(#revGrad2)" dot={false}
-                    activeDot={{ r: 4, fill: '#BFFF00', stroke: '#07070E', strokeWidth: 2 }} />
+                  <Area type="monotone" dataKey="amount" stroke="#6667AB" strokeWidth={2} fill="url(#revGrad2)" dot={false}
+                    activeDot={{ r: 4, fill: '#6667AB', stroke: '#08080A', strokeWidth: 2 }} />
                 </AreaChart>
               </ResponsiveContainer>
             </div>
@@ -224,8 +224,8 @@ export default function BotMetricsPage() {
                 const total = (sb.started || 0) + (sb.pix_generated || 0) + (sb.paid || 0);
                 return [
                   { label: 'Iniciados',  val: (sb.started || 0) + (sb.pix_generated || 0) + (sb.paid || 0), color: '#7878A0' },
-                  { label: 'PIX Gerado', val: (sb.pix_generated || 0) + (sb.paid || 0), color: '#00E5FF'  },
-                  { label: 'Pagos',      val: sb.paid || 0,                              color: '#BFFF00'  },
+                  { label: 'PIX Gerado', val: (sb.pix_generated || 0) + (sb.paid || 0), color: '#9293C9'  },
+                  { label: 'Pagos',      val: sb.paid || 0,                              color: '#6667AB'  },
                 ].map(({ label, val, color }) => {
                   const pct = total > 0 ? (val / total) * 100 : 0;
                   return (
@@ -254,19 +254,19 @@ export default function BotMetricsPage() {
                 <ResponsiveContainer width="100%" height={80}>
                   <BarChart data={[
                     { name: 'Starts', value: s.totalStarts, fill: '#404060' },
-                    { name: 'PIX',    value: s.pixGenerated, fill: '#00E5FF' },
-                    { name: 'Pagos',  value: s.pixPaid,      fill: '#BFFF00' },
+                    { name: 'PIX',    value: s.pixGenerated, fill: '#9293C9' },
+                    { name: 'Pagos',  value: s.pixPaid,      fill: '#6667AB' },
                   ]} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
                     <Bar dataKey="value" radius={[3,3,0,0]}>
                       {[
-                        { fill: '#404060' }, { fill: '#00E5FF' }, { fill: '#BFFF00' }
+                        { fill: '#404060' }, { fill: '#9293C9' }, { fill: '#6667AB' }
                       ].map((entry, i) => (
                         <rect key={i} fill={entry.fill} />
                       ))}
                     </Bar>
                     <XAxis dataKey="name" tick={{ fontSize: 9, fill: '#404060' }} tickLine={false} axisLine={false} />
                     <Tooltip
-                      contentStyle={{ background: '#0D0D1C', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', fontSize: '11px', color: '#EEEEF8' }}
+                      contentStyle={{ background: '#0D0D1C', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', fontSize: '11px', color: '#F0EEE9' }}
                       cursor={{ fill: 'rgba(255,255,255,0.03)' }}
                     />
                   </BarChart>

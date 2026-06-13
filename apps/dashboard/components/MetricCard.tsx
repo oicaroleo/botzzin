@@ -15,7 +15,7 @@ export default function MetricCard({ label, value, icon, sub, accent }: MetricCa
       </div>
       <div className="mono" style={{
         fontSize: '30px', fontWeight: 700, lineHeight: 1, letterSpacing: '-1px',
-        color: accent ? '#BFFF00' : '#EEEEF8',
+        color: accent ? '#6667AB' : '#F0EEE9',
       }}>
         {value}
       </div>

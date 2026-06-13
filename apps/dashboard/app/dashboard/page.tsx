@@ -67,8 +67,8 @@ function PeriodFilter({ value, onChange }: { value: Period; onChange: (p: Period
           style={{
             padding: '6px 14px', borderRadius: '7px', border: 'none', cursor: 'pointer',
             fontSize: '12px', fontWeight: 700, letterSpacing: '0.02em',
-            background: value === p.key ? 'rgba(191,255,0,0.12)' : 'transparent',
-            color: value === p.key ? '#BFFF00' : '#505070',
+            background: value === p.key ? 'rgba(102,103,171,0.12)' : 'transparent',
+            color: value === p.key ? '#6667AB' : '#505070',
             transition: 'all 0.15s',
           }}
         >{p.label}</button>
@@ -87,9 +87,9 @@ function FlowSelect({ flows, value, onChange }: {
       onChange={e => onChange(e.target.value)}
       style={{
         appearance: 'none', cursor: 'pointer', fontFamily: 'inherit',
-        background: value === 'all' ? 'rgba(255,255,255,0.03)' : 'rgba(191,255,0,0.08)',
-        border: '1px solid', borderColor: value === 'all' ? 'rgba(255,255,255,0.06)' : 'rgba(191,255,0,0.3)',
-        color: value === 'all' ? '#7878A0' : '#BFFF00',
+        background: value === 'all' ? 'rgba(255,255,255,0.03)' : 'rgba(102,103,171,0.08)',
+        border: '1px solid', borderColor: value === 'all' ? 'rgba(255,255,255,0.06)' : 'rgba(102,103,171,0.3)',
+        color: value === 'all' ? '#7878A0' : '#6667AB',
         borderRadius: '10px', padding: '8px 30px 8px 14px', fontSize: '12px', fontWeight: 700,
         backgroundImage: 'url("data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'10\' height=\'10\' viewBox=\'0 0 10 10\'><path d=\'M1 3l4 4 4-4\' stroke=\'%23505070\' stroke-width=\'1.5\' fill=\'none\' stroke-linecap=\'round\'/></svg>")',
         backgroundRepeat: 'no-repeat', backgroundPosition: 'right 12px center',
@@ -112,7 +112,7 @@ function StatCard({
       <div className="label" style={{ marginBottom: '14px' }}>{label}</div>
       <div className="mono" style={{
         fontSize: '34px', fontWeight: 700, lineHeight: 1,
-        color: accent ? '#BFFF00' : '#EEEEF8', letterSpacing: '-1px',
+        color: accent ? '#6667AB' : '#F0EEE9', letterSpacing: '-1px',
       }}>
         {value}
       </div>
@@ -121,8 +121,8 @@ function StatCard({
         {delta && (
           <span style={{
             fontSize: '11px', fontWeight: 700, padding: '2px 7px', borderRadius: '20px',
-            background: delta.up ? 'rgba(191,255,0,0.08)' : 'rgba(255,59,78,0.08)',
-            color: delta.up ? '#BFFF00' : '#FF3B4E',
+            background: delta.up ? 'rgba(102,103,171,0.08)' : 'rgba(255,59,78,0.08)',
+            color: delta.up ? '#6667AB' : '#FF3B4E',
           }}>
             {delta.up ? '↑' : '↓'} {delta.val}
           </span>
@@ -138,7 +138,7 @@ function ConversionGauge({ rate }: { rate: number }) {
   const filled = clamped;
   const empty = 100 - filled;
   const data = [
-    { value: filled,  color: '#BFFF00' },
+    { value: filled,  color: '#6667AB' },
     { value: empty,   color: 'rgba(255,255,255,0.06)' },
   ];
 
@@ -167,7 +167,7 @@ function ConversionGauge({ rate }: { rate: number }) {
           position: 'absolute', bottom: '8px',
           textAlign: 'center', lineHeight: 1,
         }}>
-          <div className="mono" style={{ fontSize: '28px', fontWeight: 700, color: '#BFFF00', letterSpacing: '-1px' }}>
+          <div className="mono" style={{ fontSize: '28px', fontWeight: 700, color: '#6667AB', letterSpacing: '-1px' }}>
             {clamped.toFixed(1)}%
           </div>
         </div>
@@ -187,7 +187,7 @@ function RevenueChart({ data }: { data: RevenuePoint[] }) {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
         <div>
           <div className="label">RECEITA</div>
-          <div className="mono" style={{ fontSize: '22px', fontWeight: 700, color: '#EEEEF8', marginTop: '4px' }}>
+          <div className="mono" style={{ fontSize: '22px', fontWeight: 700, color: '#F0EEE9', marginTop: '4px' }}>
             {fmt(data.reduce((s, d) => s + d.amount, 0))}
           </div>
         </div>
@@ -199,8 +199,8 @@ function RevenueChart({ data }: { data: RevenuePoint[] }) {
         <AreaChart data={data} margin={{ top: 4, right: 0, left: 0, bottom: 0 }}>
           <defs>
             <linearGradient id="revGrad" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#BFFF00" stopOpacity={0.25} />
-              <stop offset="100%" stopColor="#BFFF00" stopOpacity={0} />
+              <stop offset="0%" stopColor="#6667AB" stopOpacity={0.25} />
+              <stop offset="100%" stopColor="#6667AB" stopOpacity={0} />
             </linearGradient>
           </defs>
           <CartesianGrid stroke="rgba(255,255,255,0.04)" vertical={false} />
@@ -215,16 +215,16 @@ function RevenueChart({ data }: { data: RevenuePoint[] }) {
           <Tooltip
             contentStyle={{
               background: '#0D0D1C', border: '1px solid rgba(255,255,255,0.08)',
-              borderRadius: '8px', fontSize: '12px', color: '#EEEEF8',
+              borderRadius: '8px', fontSize: '12px', color: '#F0EEE9',
             }}
             labelFormatter={(label: unknown) => shortDate(String(label))}
             formatter={(val: unknown) => [fmt(Number(val)), 'Receita']}
           />
           <Area
             type="monotone" dataKey="amount"
-            stroke="#BFFF00" strokeWidth={2}
+            stroke="#6667AB" strokeWidth={2}
             fill="url(#revGrad)"
-            dot={false} activeDot={{ r: 4, fill: '#BFFF00', stroke: '#07070E', strokeWidth: 2 }}
+            dot={false} activeDot={{ r: 4, fill: '#6667AB', stroke: '#08080A', strokeWidth: 2 }}
           />
         </AreaChart>
       </ResponsiveContainer>
@@ -240,9 +240,9 @@ function ActivityLog({ leads }: { leads: Lead[] }) {
     let color = '#7878A0';
 
     if (l.status === 'paid' || l.paidAt) {
-      icon = '✅'; text = `Venda aprovada: ${name}`; color = '#BFFF00';
+      icon = '✅'; text = `Venda aprovada: ${name}`; color = '#6667AB';
     } else if (l.status === 'pix_generated') {
-      icon = '⚡'; text = `PIX gerado: ${name}`; color = '#00E5FF';
+      icon = '⚡'; text = `PIX gerado: ${name}`; color = '#9293C9';
     }
 
     return { icon, text, color, time: l.paidAt || l.createdAt, id: l.id };
@@ -300,13 +300,13 @@ function PixStats({ pixGenerated, pixPaid }: { pixGenerated: number; pixPaid: nu
       <div style={{ display: 'flex', gap: '24px', marginBottom: '16px' }}>
         <div>
           <div style={{ fontSize: '11px', color: '#404060', marginBottom: '4px' }}>PIX GERADOS</div>
-          <div className="mono" style={{ fontSize: '24px', fontWeight: 700, color: '#EEEEF8' }}>
+          <div className="mono" style={{ fontSize: '24px', fontWeight: 700, color: '#F0EEE9' }}>
             {fmtShort(pixGenerated)}
           </div>
         </div>
         <div>
           <div style={{ fontSize: '11px', color: '#404060', marginBottom: '4px' }}>APROVADOS</div>
-          <div className="mono" style={{ fontSize: '24px', fontWeight: 700, color: '#BFFF00' }}>
+          <div className="mono" style={{ fontSize: '24px', fontWeight: 700, color: '#6667AB' }}>
             {fmtShort(pixPaid)}
           </div>
         </div>
@@ -315,7 +315,7 @@ function PixStats({ pixGenerated, pixPaid }: { pixGenerated: number; pixPaid: nu
       <div>
         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
           <span style={{ fontSize: '10px', color: '#404060', fontWeight: 700 }}>TAXA DE APROVAÇÃO</span>
-          <span className="mono" style={{ fontSize: '10px', color: '#BFFF00', fontWeight: 700 }}>
+          <span className="mono" style={{ fontSize: '10px', color: '#6667AB', fontWeight: 700 }}>
             {rate.toFixed(1)}%
           </span>
         </div>
@@ -323,7 +323,7 @@ function PixStats({ pixGenerated, pixPaid }: { pixGenerated: number; pixPaid: nu
           <div style={{
             height: '100%', borderRadius: '99px',
             width: `${Math.min(100, rate)}%`,
-            background: 'linear-gradient(90deg, #BFFF00, #00E5FF)',
+            background: 'linear-gradient(90deg, #6667AB, #9293C9)',
             transition: 'width 0.8s cubic-bezier(.22,.68,0,1.2)',
           }} />
         </div>
@@ -342,18 +342,18 @@ function BotSelectorRow({ bots, selected, onSelect }: {
         onClick={() => onSelect('all')}
         style={{
           padding: '5px 12px', borderRadius: '20px', border: '1px solid',
-          borderColor: selected === 'all' ? 'rgba(191,255,0,0.3)' : 'rgba(255,255,255,0.06)',
-          background: selected === 'all' ? 'rgba(191,255,0,0.08)' : 'transparent',
-          color: selected === 'all' ? '#BFFF00' : '#505070',
+          borderColor: selected === 'all' ? 'rgba(102,103,171,0.3)' : 'rgba(255,255,255,0.06)',
+          background: selected === 'all' ? 'rgba(102,103,171,0.08)' : 'transparent',
+          color: selected === 'all' ? '#6667AB' : '#505070',
           fontSize: '12px', fontWeight: 700, cursor: 'pointer',
         }}
       >Todos</button>
       {bots.map(b => (
         <button key={b.id} onClick={() => onSelect(b.id)} style={{
           padding: '5px 12px', borderRadius: '20px', border: '1px solid',
-          borderColor: selected === b.id ? 'rgba(191,255,0,0.3)' : 'rgba(255,255,255,0.06)',
-          background: selected === b.id ? 'rgba(191,255,0,0.08)' : 'transparent',
-          color: selected === b.id ? '#BFFF00' : '#505070',
+          borderColor: selected === b.id ? 'rgba(102,103,171,0.3)' : 'rgba(255,255,255,0.06)',
+          background: selected === b.id ? 'rgba(102,103,171,0.08)' : 'transparent',
+          color: selected === b.id ? '#6667AB' : '#505070',
           fontSize: '12px', fontWeight: 700, cursor: 'pointer',
           display: 'flex', alignItems: 'center', gap: '6px',
         }}>
@@ -608,8 +608,8 @@ export default function DashboardPage() {
                   <div className="label" style={{ marginBottom: '16px' }}>FUNIL DE LEADS</div>
                   {[
                     { label: 'Iniciados', val: metrics.statusBreakdown.started + metrics.statusBreakdown.pix_generated + metrics.statusBreakdown.paid, color: '#7878A0' },
-                    { label: 'PIX Gerado', val: metrics.statusBreakdown.pix_generated + metrics.statusBreakdown.paid, color: '#00E5FF' },
-                    { label: 'Pagos', val: metrics.statusBreakdown.paid, color: '#BFFF00' },
+                    { label: 'PIX Gerado', val: metrics.statusBreakdown.pix_generated + metrics.statusBreakdown.paid, color: '#9293C9' },
+                    { label: 'Pagos', val: metrics.statusBreakdown.paid, color: '#6667AB' },
                   ].map(({ label, val, color }) => {
                     const total = metrics.statusBreakdown.started + metrics.statusBreakdown.pix_generated + metrics.statusBreakdown.paid;
                     const pct = total > 0 ? (val / total) * 100 : 0;
@@ -648,7 +648,7 @@ export default function DashboardPage() {
                       padding: '8px 0', borderBottom: '1px solid rgba(255,255,255,0.04)',
                     }}>
                       <span style={{ fontSize: '12px', color: '#505070' }}>{k}</span>
-                      <span className="mono" style={{ fontSize: '13px', fontWeight: 600, color: '#EEEEF8' }}>{v}</span>
+                      <span className="mono" style={{ fontSize: '13px', fontWeight: 600, color: '#F0EEE9' }}>{v}</span>
                     </div>
                   ))}
                 </div>
@@ -673,14 +673,14 @@ export default function DashboardPage() {
                         }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                             <span className={`dot ${b.status === 'active' ? 'dot-on' : 'dot-off'}`} />
-                            <span style={{ fontSize: '12px', color: '#EEEEF8', fontWeight: 600 }}>
+                            <span style={{ fontSize: '12px', color: '#F0EEE9', fontWeight: 600 }}>
                               @{b.telegramUsername || b.telegramBotId}
                             </span>
                           </div>
                           <span style={{
                             fontSize: '10px', fontWeight: 700, padding: '2px 7px', borderRadius: '20px',
-                            background: b.status === 'active' ? 'rgba(191,255,0,0.08)' : 'rgba(255,255,255,0.04)',
-                            color: b.status === 'active' ? '#BFFF00' : '#404060',
+                            background: b.status === 'active' ? 'rgba(102,103,171,0.08)' : 'rgba(255,255,255,0.04)',
+                            color: b.status === 'active' ? '#6667AB' : '#404060',
                           }}>
                             {b.status === 'active' ? 'ATIVO' : 'PAUSADO'}
                           </span>

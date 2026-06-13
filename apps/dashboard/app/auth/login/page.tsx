@@ -22,7 +22,7 @@ export default function LoginPage() {
   return (
     <div style={{
       minHeight: '100vh', display: 'flex',
-      background: '#07070E',
+      background: '#08080A',
       fontFamily: 'var(--font-syne, Syne), sans-serif',
     }}>
       {/* ── Left: form panel ────────────────────────────────── */}
@@ -36,7 +36,7 @@ export default function LoginPage() {
         <div style={{ marginBottom: '52px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px' }}>
             <div style={{
-              width: '34px', height: '34px', background: '#BFFF00', borderRadius: '8px',
+              width: '34px', height: '34px', background: '#6667AB', borderRadius: '8px',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               fontWeight: 800, fontSize: '16px', color: '#06060E',
             }}>B</div>
@@ -77,7 +77,7 @@ export default function LoginPage() {
 
         <p style={{ textAlign: 'center', color: '#606080', marginTop: '28px', fontSize: '14px' }}>
           Não tem conta?{' '}
-          <Link href="/auth/signup" style={{ color: '#BFFF00', fontWeight: 700, textDecoration: 'none' }}>
+          <Link href="/auth/signup" style={{ color: '#6667AB', fontWeight: 700, textDecoration: 'none' }}>
             Criar conta grátis
           </Link>
         </p>
@@ -86,14 +86,14 @@ export default function LoginPage() {
       {/* ── Right: decorative panel ──────────────────────────── */}
       <div style={{
         flex: 1, position: 'relative', overflow: 'hidden',
-        background: 'radial-gradient(ellipse 80% 80% at 60% 50%, rgba(191,255,0,0.04) 0%, transparent 70%)',
+        background: 'radial-gradient(ellipse 80% 80% at 60% 50%, rgba(102,103,171,0.04) 0%, transparent 70%)',
       }}>
         {/* Grid pattern */}
         <div style={{
           position: 'absolute', inset: 0,
           backgroundImage: `
-            linear-gradient(rgba(191,255,0,0.04) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(191,255,0,0.04) 1px, transparent 1px)
+            linear-gradient(rgba(102,103,171,0.04) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(102,103,171,0.04) 1px, transparent 1px)
           `,
           backgroundSize: '48px 48px',
         }}/>
@@ -107,9 +107,9 @@ export default function LoginPage() {
           <div style={{ width: '100%', maxWidth: '340px' }}>
             {/* Stats cards floating */}
             {[
-              { label: 'Receita este mês', val: 'R$ 24.680', col: '#BFFF00', delay: '0s' },
-              { label: 'Leads convertidos', val: '1.247', col: '#00E5FF', delay: '0.1s' },
-              { label: 'Taxa de conversão', val: '18,3%', col: '#BFFF00', delay: '0.2s' },
+              { label: 'Receita este mês', val: 'R$ 24.680', col: '#6667AB', delay: '0s' },
+              { label: 'Leads convertidos', val: '1.247', col: '#9293C9', delay: '0.1s' },
+              { label: 'Taxa de conversão', val: '18,3%', col: '#6667AB', delay: '0.2s' },
             ].map(({ label, val, col, delay }, i) => (
               <div key={i} style={{
                 background: 'rgba(13,13,28,0.8)',

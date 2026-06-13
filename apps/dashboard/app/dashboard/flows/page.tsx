@@ -100,8 +100,8 @@ export default function FlowsPage() {
                 </div>
                 <div style={{
                   fontSize: '10px', fontWeight: 800, padding: '3px 8px', borderRadius: '20px',
-                  background: flow.isActive ? 'rgba(191,255,0,0.1)' : 'rgba(255,255,255,0.04)',
-                  color: flow.isActive ? '#BFFF00' : '#505070',
+                  background: flow.isActive ? 'rgba(102,103,171,0.1)' : 'rgba(255,255,255,0.04)',
+                  color: flow.isActive ? '#6667AB' : '#505070',
                 }}>{flow.isActive ? 'ATIVO' : 'PAUSADO'}</div>
               </div>
 
@@ -137,15 +137,15 @@ export default function FlowsPage() {
                 <div>
                   <div className="label" style={{ marginBottom: '3px' }}>EXTRAS</div>
                   <div style={{ display: 'flex', gap: '4px', marginTop: '2px' }}>
-                    {flow.downsellEnabled   && <span style={{ fontSize: '10px', background: 'rgba(0,229,255,0.1)', color: '#00E5FF', padding: '1px 5px', borderRadius: '3px' }}>DS</span>}
-                    {flow.upsellEnabled     && <span style={{ fontSize: '10px', background: 'rgba(191,255,0,0.1)', color: '#BFFF00', padding: '1px 5px', borderRadius: '3px' }}>US</span>}
+                    {flow.downsellEnabled   && <span style={{ fontSize: '10px', background: 'rgba(146,147,201,0.1)', color: '#9293C9', padding: '1px 5px', borderRadius: '3px' }}>DS</span>}
+                    {flow.upsellEnabled     && <span style={{ fontSize: '10px', background: 'rgba(102,103,171,0.1)', color: '#6667AB', padding: '1px 5px', borderRadius: '3px' }}>US</span>}
                     {flow.orderbumpEnabled  && <span style={{ fontSize: '10px', background: 'rgba(255,100,100,0.1)', color: '#FF6464', padding: '1px 5px', borderRadius: '3px' }}>OB</span>}
                     {!flow.downsellEnabled && !flow.upsellEnabled && !flow.orderbumpEnabled && <span style={{ fontSize: '11px', color: '#404060' }}>—</span>}
                   </div>
                 </div>
               </div>
 
-              <div style={{ marginTop: '14px', fontSize: '11px', color: 'rgba(191,255,0,0.5)', fontWeight: 700, letterSpacing: '0.05em' }}>
+              <div style={{ marginTop: '14px', fontSize: '11px', color: 'rgba(102,103,171,0.5)', fontWeight: 700, letterSpacing: '0.05em' }}>
                 EDITAR FLUXO →
               </div>
             </div>

@@ -30,7 +30,7 @@ function Toggle({ on, onChange, label, desc }: { on: boolean; onChange: (v: bool
       </div>
       <button onClick={() => onChange(!on)} style={{
         width: '44px', height: '24px', borderRadius: '12px', border: 'none', cursor: 'pointer',
-        background: on ? '#BFFF00' : 'rgba(255,255,255,0.08)', position: 'relative',
+        background: on ? '#6667AB' : 'rgba(255,255,255,0.08)', position: 'relative',
         transition: 'background 0.2s', flexShrink: 0,
       }}>
         <div style={{
@@ -193,7 +193,7 @@ export default function GatewaysPage() {
           {sorted.map((gw, idx) => (
             <div key={gw.id} className="card" style={{
               padding: '16px 18px',
-              borderLeft: `3px solid ${idx === 0 ? '#BFFF00' : idx === 1 ? '#00E5FF' : '#404060'}`,
+              borderLeft: `3px solid ${idx === 0 ? '#6667AB' : idx === 1 ? '#9293C9' : '#404060'}`,
               opacity: gw.isActive ? 1 : 0.5,
             }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -201,9 +201,9 @@ export default function GatewaysPage() {
                   {/* Priority badge */}
                   <div style={{
                     width: '28px', height: '28px', borderRadius: '7px', flexShrink: 0,
-                    background: idx === 0 ? 'rgba(191,255,0,0.12)' : 'rgba(255,255,255,0.04)',
+                    background: idx === 0 ? 'rgba(102,103,171,0.12)' : 'rgba(255,255,255,0.04)',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontSize: '11px', fontWeight: 800, color: idx === 0 ? '#BFFF00' : '#505070',
+                    fontSize: '11px', fontWeight: 800, color: idx === 0 ? '#6667AB' : '#505070',
                   }}>
                     {idx === 0 ? '1°' : `${idx + 1}°`}
                   </div>
@@ -213,7 +213,7 @@ export default function GatewaysPage() {
                     </div>
                     <div style={{ fontSize: '11px', color: '#505070', marginTop: '1px' }}>
                       {PROVIDERS.find(p => p.value === gw.provider)?.label || gw.provider}
-                      {idx === 0 && <span style={{ color: '#BFFF00', marginLeft: '6px', fontWeight: 700 }}>· PRIMÁRIO</span>}
+                      {idx === 0 && <span style={{ color: '#6667AB', marginLeft: '6px', fontWeight: 700 }}>· PRIMÁRIO</span>}
                       {idx > 0 && <span style={{ color: '#606080', marginLeft: '6px' }}>· FALLBACK {idx}</span>}
                     </div>
                   </div>
@@ -223,7 +223,7 @@ export default function GatewaysPage() {
                   {/* Stats */}
                   <div style={{ textAlign: 'right' }}>
                     <div style={{ fontSize: '11px', color: '#404060' }}>CONVERSÃO</div>
-                    <div className="mono" style={{ fontSize: '14px', fontWeight: 700, color: gw.pixPaid > 0 ? '#BFFF00' : '#505070' }}>
+                    <div className="mono" style={{ fontSize: '14px', fontWeight: 700, color: gw.pixPaid > 0 ? '#6667AB' : '#505070' }}>
                       {convRate(gw.pixGenerated, gw.pixPaid)}
                     </div>
                   </div>
@@ -246,8 +246,8 @@ export default function GatewaysPage() {
                   <button onClick={() => toggleGateway(gw)}
                     style={{
                       padding: '5px 10px', borderRadius: '6px', fontSize: '11px', fontWeight: 700, cursor: 'pointer', border: 'none',
-                      background: gw.isActive ? 'rgba(191,255,0,0.1)' : 'rgba(255,255,255,0.05)',
-                      color: gw.isActive ? '#BFFF00' : '#505070',
+                      background: gw.isActive ? 'rgba(102,103,171,0.1)' : 'rgba(255,255,255,0.05)',
+                      color: gw.isActive ? '#6667AB' : '#505070',
                     }}>
                     {gw.isActive ? 'ATIVO' : 'PAUSADO'}
                   </button>
@@ -300,7 +300,7 @@ export default function GatewaysPage() {
             ).map((s, i) => (
               <div key={s.provider} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  {i === 0 && <span style={{ fontSize: '10px', background: 'rgba(191,255,0,0.1)', color: '#BFFF00', padding: '2px 6px', borderRadius: '4px', fontWeight: 700 }}>MELHOR</span>}
+                  {i === 0 && <span style={{ fontSize: '10px', background: 'rgba(102,103,171,0.1)', color: '#6667AB', padding: '2px 6px', borderRadius: '4px', fontWeight: 700 }}>MELHOR</span>}
                   <span style={{ fontSize: '13px', fontWeight: 600 }}>
                     {PROVIDERS.find(p => p.value === s.provider)?.label || s.provider}
                   </span>
@@ -309,7 +309,7 @@ export default function GatewaysPage() {
                   <span className="mono" style={{ fontSize: '13px', color: '#505070' }}>
                     {s.pixGenerated.toLocaleString('pt-BR')} PIX gerados
                   </span>
-                  <span className="mono" style={{ fontSize: '13px', color: '#BFFF00', fontWeight: 700 }}>
+                  <span className="mono" style={{ fontSize: '13px', color: '#6667AB', fontWeight: 700 }}>
                     {convRate(s.pixGenerated, s.pixPaid)} conv.
                   </span>
                 </div>

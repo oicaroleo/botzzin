@@ -2,19 +2,20 @@
 
 /* ── Tokens ─────────────────────────────────────────────────── */
 :root {
-  --bg:        #07070E;
-  --surface:   #0D0D1C;
-  --surface2:  #12122A;
-  --border:    rgba(255,255,255,0.06);
-  --border-hi: rgba(191,255,0,0.25);
-  --lime:      #BFFF00;
-  --lime-glow: rgba(191,255,0,0.15);
-  --lime-dim:  rgba(191,255,0,0.08);
-  --red:       #FF3B4E;
-  --cyan:      #00E5FF;
-  --t1:        #EEEEF8;
-  --t2:        #7878A0;
-  --t3:        #404060;
+  /* Paleta — Very Peri (#6667AB) + Cloud Dancer (#F0EEE9) + preto */
+  --bg:        #08080A;   /* preto neutro */
+  --surface:   #0F0F12;
+  --surface2:  #17171C;
+  --border:    rgba(240,238,233,0.07);
+  --border-hi: rgba(102,103,171,0.30);
+  --lime:      #6667AB;                   /* primária: Very Peri */
+  --lime-glow: rgba(102,103,171,0.18);
+  --lime-dim:  rgba(102,103,171,0.08);
+  --red:       #FF4D4D;
+  --cyan:      #9293C9;                   /* secundária: periwinkle claro */
+  --t1:        #F0EEE9;                   /* Cloud Dancer */
+  --t2:        #8888A2;
+  --t3:        #4A4A55;
 }
 
 /* ── Reset ──────────────────────────────────────────────────── */
@@ -57,7 +58,7 @@ body {
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(135deg, rgba(191,255,0,0.03) 0%, transparent 60%);
+  background: linear-gradient(135deg, rgba(102,103,171,0.03) 0%, transparent 60%);
   pointer-events: none;
 }
 .card-hover {
@@ -67,7 +68,7 @@ body {
 .card-hover:hover {
   border-color: var(--border-hi);
   background: var(--surface2);
-  box-shadow: 0 0 24px rgba(191,255,0,0.06);
+  box-shadow: 0 0 24px rgba(102,103,171,0.06);
 }
 
 /* ── Inputs ─────────────────────────────────────────────────── */
@@ -109,12 +110,12 @@ body {
 
 .btn-primary {
   background: var(--lime);
-  color: #06060E;
+  color: #F0EEE9;
   padding: 10px 20px;
 }
 .btn-primary:not(:disabled):hover {
-  background: #d4ff1a;
-  box-shadow: 0 0 20px rgba(191,255,0,0.3);
+  background: #7677BC;
+  box-shadow: 0 0 22px rgba(102,103,171,0.45);
 }
 .btn-primary:not(:disabled):active { transform: scale(0.97); }
 

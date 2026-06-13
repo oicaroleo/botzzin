@@ -40,7 +40,7 @@ export default function CreateBotModal({ onClose, onSuccess }: Props) {
           </div>
           <button onClick={onClose}
             style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '8px', width: '32px', height: '32px', cursor: 'pointer', fontSize: '16px', color: '#505070', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.15s' }}
-            onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.color = '#EEEEF8'; }}
+            onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.color = '#F0EEE9'; }}
             onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.color = '#505070'; }}>
             ×
           </button>
